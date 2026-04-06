@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="인지 실험">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a1a">
+
+    <title>알림 방해 인지 실험 (Stroop Task)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            overflow: hidden;
+            touch-action: manipulation; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        .stroop-text {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            user-select: none;
+            text-align: center;
+        }
+
+        .ios-notification {
+            position: absolute;
+            top: calc(env(safe-area-inset-top, 20px) + 10px);
+            left: 12px;
+            right: 12px;
+            background-color: rgba(35, 35, 35, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 22px;
+            padding: 14px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            transform: translateY(-200%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 9999;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .ios-notification.show {
+            transform: translateY(0);
+        }
+
+        .tap-effect:active {
+            opacity: 0.7;
+            transform: scale(0.96);
+        }
+        
+        .color-btn {
+            transition: transform 0.1s;
+        }
+        .color-btn:active {
+            transform: scale(0.92);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="notification" class="ios-notification">
+        <div id="noti-icon-container" class="w-[38px] h-[38px] rounded-[10px] flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
+        <div class="flex-1 overflow-hidden pt-0.5">
+            <div class="flex justify-between items-start mb-0.5">
+                <span id="noti-title" class="font-semibold text-[14px] text-white truncate tracking-tight"></span>
+                <span class="text-[13px] text-gray-400 whitespace-nowrap ml-3 tracking-tight">지금</span>
+            </div>
+            <div id="noti-msg" class="text-[14px] text-gray-200 leading-[1.3] tracking-tight line-clamp-2"></div>
+        </div>
+    </div>
+
+    <div id="screen-intro" class="screen active p-6">
+        <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full">
+            <h1 class="text-3xl font-bold mb-4 text-white">인지 반응 검사</h1>
+            <p class="text-gray-400 mb-8 text-center text-[15px] leading-relaxed">
+                화면 중앙에 나타나는 단어의 <strong>'의미'</strong>가 아닌,<br>
+                글자의 <strong class="text-white">'실제 색상'</strong>에 해당하는 하단 버튼을<br>
+                최대한 빨리 눌러주세요.
+            </p>
+            
+            <div class="bg-gray-800 p-5 rounded-2xl shadow-sm w-full mb-8 border border-gray-700">
+                <p class="text-xs text-gray-400 mb-3 font-semibold">예시 연습:</p>
+                <div class="flex justify-center items-center gap-4 mb-1">
+                    <span class="text-2xl font-bold tracking-widest" style="color: #3b82f6;">빨강</span>
+                    <span class="text-xl">👉</span>
+                    <span class="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md">파랑 버튼</span>
+                </div>
+                <p class="text-[11px] text-gray-500 text-center mt-3">* 테스트 도중 알림이 발생할 수 있습니다.</p>
+            </div>
+
+            <div class="w-full mb-8">
+                <input type="number" id="participant-id" placeholder="참가자 번호 (숫자만)" class="w-full px-5 py-4 rounded-2xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg">
+            </div>
+
+            <button id="btn-start" class="tap-effect w-full py-4 bg-white text-black font-bold rounded-2xl text-xl shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                실험 시작
+            </button>
+            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-500 underline tap-effect">
+                전체화면으로 전환
+            </button>
+        </div>
+    </div>
+
+    <div id="screen-fixation" class="screen justify-center items-center bg-[#1a1a1a]">
+        <div class="text-5xl text-gray-500 font-light">+</div>
+    </div>
+
+    <div id="screen-task" class="screen bg-[#1a1a1a]">
+        <div class="pt-12 px-6 flex justify-between items-center z-10">
+            <div class="w-full bg-gray-800 rounded-full h-1.5">
+                <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <span class="text-xs text-gray-500 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center relative">
+            <div id="target-word" class="stroop-text drop-shadow-md"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 p-5 pb-10">
+            <button class="color-btn py-10 rounded-[2rem] font-bold text-white shadow-lg text-2xl" data-color="red" style="background-color: #ef4444;"></button>
+            <button class="color-btn py-10 rounded-[2rem] font-bold text-white shadow-lg text-2xl" data-color="blue" style="background-color: #3b82f6;"></button>
+            <button class="color-btn py-10 rounded-[2rem] font-bold text-white shadow-lg text-2xl" data-color="green" style="background-color: #22c55e;"></button>
+            <button class="color-btn py-10 rounded-[2rem] font-bold text-gray-900 shadow-lg text-2xl" data-color="yellow" style="background-color: #facc15;"></button>
+        </div>
+    </div>
+
+    <div id="screen-result" class="screen p-6">
+        <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
+            <div class="w-24 h-24 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+                ✓
+            </div>
+            <h2 class="text-3xl font-bold mb-3 text-white">실험 종료</h2>
+            <p class="text-gray-400 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
+            
+            <div class="w-full space-y-4">
+                <button id="btn-download" class="tap-effect w-full py-4 bg-blue-600 text-white font-bold rounded-2xl text-lg shadow-lg">
+                    데이터 다운로드 (CSV)
+                </button>
+                <button id="btn-restart" class="tap-effect w-full py-4 bg-gray-800 text-white font-bold rounded-2xl text-lg border border-gray-700">
+                    다시 하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= Supabase 연결 설정 =================
+        // 🚨 아래 URL을 본인의 Supabase Project URL로 반드시 변경하세요! 🚨
+        const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
+        const supabaseUrlConfigured = SUPABASE_URL.includes('본인의_프로젝트_주소') === false; // 세팅 확인용
+        const db = supabaseUrlConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        // =======================================================
+
+        const CONFIG = {
+            totalTrials: 20,             
+            fixationTime: 600,           
+            notiProbability: 0.25,       
+            notiDuration: 4000           
+        };
+
+        const COLORS = [
+            { id: 'red', name: '빨강', hex: '#ef4444' },
+            { id: 'blue', name: '파랑', hex: '#3b82f6' },
+            { id: 'green', name: '초록', hex: '#22c55e' },
+            { id: 'yellow', name: '노랑', hex: '#facc15' }
+        ];
+
+        const ICONS = {
+            instagram: `<div class="absolute inset-0 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]"></div>
+                        <div class="w-[22px] h-[22px] border-[2px] border-white rounded-[6px] flex items-center justify-center relative z-10">
+                        <div class="w-[10px] h-[10px] border-[2px] border-white rounded-full"></div>
+                        <div class="w-[2.5px] h-[2.5px] bg-white rounded-full absolute top-[3px] right-[3px]"></div></div>`,
+            kakaotalk: `<div class="absolute inset-0 bg-[#FEE500]"></div>
+                        <div class="relative z-10 text-[#374151] font-black text-[16px] tracking-tighter mt-1">TALK</div>`
+        };
+
+        const NOTIFICATIONS = [
+            { iconHtml: ICONS.instagram, title: 'in.thummmb_95', msg: 'OOO(OOO)님이 회원님을 팔로우하기 시작했습니다.' },
+            { iconHtml: ICONS.instagram, title: 'Instagram', msg: 'user_123님이 회원님의 게시물을 좋아합니다.' },
+            { iconHtml: ICONS.kakaotalk, title: '김철수', msg: '야 오늘 저녁에 시간 됨? 맛있는거 먹자 ㅋㅋㅋ' },
+            { iconHtml: ICONS.kakaotalk, title: '어머니', msg: '언제 들어오니? 밥 차려놓을까?' }
+        ];
+
+        let currentTrial = 0;
+        let participantId = 1; // SPSS 분석용 숫자 ID
+        let trialData = [];
+        let currentTargetColorId = "";
+        let currentTargetWord = "";
+        let trialStartTime = 0;
+        let isNotiVisible = false;
+        let notiTimeout = null;
+
+        const screens = {
+            intro: document.getElementById('screen-intro'),
+            fixation: document.getElementById('screen-fixation'),
+            task: document.getElementById('screen-task'),
+            result: document.getElementById('screen-result')
+        };
+        const targetWordEl = document.getElementById('target-word');
+        const trialCounterEl = document.getElementById('trial-counter');
+        const progressBarEl = document.getElementById('progress-bar');
+        const notiEl = document.getElementById('notification');
+
+        document.getElementById('total-trials').textContent = CONFIG.totalTrials;
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        function showRandomNotification() {
+            if (isNotiVisible) return;
+            
+            const noti = NOTIFICATIONS[Math.floor(Math.random() * NOTIFICATIONS.length)];
+            document.getElementById('noti-icon-container').innerHTML = noti.iconHtml;
+            document.getElementById('noti-title').textContent = noti.title;
+            document.getElementById('noti-msg').textContent = noti.msg;
+            
+            notiEl.classList.add('show');
+            isNotiVisible = true;
+
+            if (notiTimeout) clearTimeout(notiTimeout);
+            notiTimeout = setTimeout(() => {
+                hideNotification();
+            }, CONFIG.notiDuration);
+        }
+
+        function hideNotification() {
+            notiEl.classList.remove('show');
+            isNotiVisible = false;
+        }
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            // 빈칸이거나 숫자가 아니면 랜덤 숫자 생성 (DB int4 타입 에러 방지용)
+            const inputId = parseInt(document.getElementById('participant-id').value);
+            participantId = isNaN(inputId) ? Math.floor(Math.random() * 10000) + 1 : inputId;
+            
+            currentTrial = 0;
+            trialData = [];
+            progressBarEl.style.width = '0%';
+            hideNotification();
+            nextTrial();
+        });
+
+        function nextTrial() {
+            if (currentTrial >= CONFIG.totalTrials) {
+                endExperiment();
+                return;
+            }
+            currentTrial++;
+            trialCounterEl.textContent = currentTrial;
+            progressBarEl.style.width = `${(currentTrial / CONFIG.totalTrials) * 100}%`;
+            
+            showScreen('fixation');
+
+            setTimeout(() => {
+                presentStimulus();
+            }, CONFIG.fixationTime);
+        }
+
+        function presentStimulus() {
+            showScreen('task');
+            
+            const wordObj = COLORS[Math.floor(Math.random() * COLORS.length)];
+            let colorObj = COLORS[Math.floor(Math.random() * COLORS.length)];
+            
+            if (Math.random() > 0.3 && wordObj.id === colorObj.id) {
+                const otherColors = COLORS.filter(c => c.id !== wordObj.id);
+                colorObj = otherColors[Math.floor(Math.random() * otherColors.length)];
+            }
+
+            currentTargetWord = wordObj.name;
+            currentTargetColorId = colorObj.id;
+            const isCongruent = (wordObj.id === colorObj.id);
+
+            targetWordEl.textContent = currentTargetWord;
+            targetWordEl.style.color = colorObj.hex;
+
+            let notiTriggeredOnThisTrial = false;
+            if (!isNotiVisible && Math.random() < CONFIG.notiProbability) {
+                setTimeout(() => { showRandomNotification(); }, 150); 
+                notiTriggeredOnThisTrial = true;
+            }
+
+            trialStartTime = performance.now();
+
+            trialData[currentTrial - 1] = {
+                participantId: participantId,
+                trialNumber: currentTrial,
+                word: currentTargetWord,
+                color: colorObj.name,
+                condition: isCongruent ? 'Congruent' : 'Incongruent',
+                notificationPresent: (isNotiVisible || notiTriggeredOnThisTrial) ? 'Yes' : 'No'
+            };
+        }
+
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('touchstart', handleInput, {passive: false});
+            btn.addEventListener('mousedown', handleInput); 
+        });
+
+        function handleInput(e) {
+            if (screens.task.classList.contains('active') === false) return;
+            e.preventDefault(); 
+
+            const reactionTime = Math.round(performance.now() - trialStartTime);
+            const selectedColorId = e.currentTarget.getAttribute('data-color');
+            const isCorrect = (selectedColorId === currentTargetColorId);
+            
+            // 알림 상태 확인 (알림이 떠있으면 1, 아니면 0)
+            const phaseNum = isNotiVisible ? 1 : 0;
+
+            // 1. CSV 용 데이터 저장
+            trialData[currentTrial - 1].responseColorId = selectedColorId;
+            trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
+            trialData[currentTrial - 1].reactionTimeMs = reactionTime;
+
+            // 2. Supabase DB 실시간 전송 (URL 세팅이 되어있을 때만)
+            if (db) {
+                db.from('Stroop_Trials').insert([
+                    { 
+                        participant_id: participantId, 
+                        trial_number: currentTrial, 
+                        notification_phase: phaseNum,
+                        reaction_time_ms: reactionTime,
+                        is_correct: isCorrect 
+                    }
+                ]).then(({ error }) => {
+                    if (error) console.error('DB 전송 에러:', error);
+                    else console.log(`${currentTrial}번 문제 DB 전송 완료`);
+                });
+            } else {
+                console.warn('Supabase URL이 입력되지 않아 DB 저장이 생략되었습니다.');
+            }
+
+            nextTrial();
+        }
+
+        function endExperiment() {
+            hideNotification();
+            showScreen('result');
+        }
+
+        notiEl.addEventListener('click', () => {
+            hideNotification();
+            if(notiTimeout) clearTimeout(notiTimeout);
+        });
+
+        document.getElementById('btn-download').addEventListener('click', () => {
+            if (trialData.length === 0) return;
+
+            const headers = ['Participant_ID', 'Trial', 'Word_Meaning', 'Ink_Color', 'Condition', 'Notification_Active', 'Correct', 'Reaction_Time_ms'];
+            const csvRows = [headers.join(',')];
+
+            trialData.forEach(row => {
+                const values = [
+                    row.participantId,
+                    row.trialNumber,
+                    row.word,
+                    row.color,
+                    row.condition,
+                    row.notificationPresent,
+                    row.isCorrect,
+                    row.reactionTimeMs
+                ];
+                csvRows.push(values.join(','));
+            });
+
+            const csvContent = "\uFEFF" + csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `stroop_data_${participantId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            showScreen('intro');
+        });
+
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            }
+        });
+    </script>
+</body>
+</html>
