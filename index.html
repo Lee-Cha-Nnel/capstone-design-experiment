@@ -177,11 +177,9 @@
 
     <script>
         // ================= Supabase 연결 설정 =================
-        // 🚨 아래 URL을 본인의 Supabase Project URL로 반드시 변경하세요! 🚨
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
-        const supabaseUrlConfigured = SUPABASE_URL.includes('본인의_프로젝트_주소') === false; // 세팅 확인용
-        const db = supabaseUrlConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         // =======================================================
 
         const CONFIG = {
@@ -215,7 +213,7 @@
         ];
 
         let currentTrial = 0;
-        let participantId = 1; // SPSS 분석용 숫자 ID
+        let participantId = 1; 
         let trialData = [];
         let currentTargetColorId = "";
         let currentTargetWord = "";
@@ -264,7 +262,6 @@
         }
 
         document.getElementById('btn-start').addEventListener('click', () => {
-            // 빈칸이거나 숫자가 아니면 랜덤 숫자 생성 (DB int4 타입 에러 방지용)
             const inputId = parseInt(document.getElementById('participant-id').value);
             participantId = isNaN(inputId) ? Math.floor(Math.random() * 10000) + 1 : inputId;
             
@@ -340,7 +337,6 @@
             const selectedColorId = e.currentTarget.getAttribute('data-color');
             const isCorrect = (selectedColorId === currentTargetColorId);
             
-            // 알림 상태 확인 (알림이 떠있으면 1, 아니면 0)
             const phaseNum = isNotiVisible ? 1 : 0;
 
             // 1. CSV 용 데이터 저장
@@ -348,9 +344,9 @@
             trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
             trialData[currentTrial - 1].reactionTimeMs = reactionTime;
 
-            // 2. Supabase DB 실시간 전송 (URL 세팅이 되어있을 때만)
+            // 2. Supabase DB 실시간 전송 (테이블 이름 Trials)
             if (db) {
-                db.from('Stroop_Trials').insert([
+                db.from('Trials').insert([
                     { 
                         participant_id: participantId, 
                         trial_number: currentTrial, 
@@ -362,8 +358,6 @@
                     if (error) console.error('DB 전송 에러:', error);
                     else console.log(`${currentTrial}번 문제 DB 전송 완료`);
                 });
-            } else {
-                console.warn('Supabase URL이 입력되지 않아 DB 저장이 생략되었습니다.');
             }
 
             nextTrial();
