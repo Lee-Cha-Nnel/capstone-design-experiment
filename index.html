@@ -7,11 +7,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="인지 실험">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#353535">
+    <!-- 배경색 완벽한 블랙으로 적용 -->
+    <meta name="theme-color" content="#050505">
 
     <title>알림 방해 인지 실험 (Stroop Task)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 데이터 저장을 위한 Supabase 그대로 유지 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -23,7 +25,7 @@
             width: 100vw;
             height: 100vh;
             font-family: 'Pretendard', -apple-system, sans-serif;
-            background-color: #353535; /* 스크린샷과 동일한 진회색 배경 */
+            background-color: #050505 !important; /* 스크린샷의 완벽한 리얼 블랙 */
             color: white;
             overflow: hidden;
             touch-action: manipulation;
@@ -38,7 +40,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            background-color: #353535;
+            background-color: #050505;
         }
         .screen.active {
             display: flex;
@@ -52,23 +54,25 @@
             text-align: center;
         }
 
-        /* 최신 알약(Pill) 알림 - 색상 조정 */
+        /* 📱 최신 안드로이드 알약(Pill) 팝업 알림 스타일 */
         .modern-pill-notification {
             position: absolute;
-            top: calc(env(safe-area-inset-top, 20px) + 15px);
+            top: calc(env(safe-area-inset-top, 10px) + 12px);
             left: 50%;
             transform: translate(-50%, -200%);
             width: fit-content;
             max-width: 92%;
-            background-color: #424242; /* 스크린샷 알림창 배경색 */
-            border-radius: 9999px;
-            padding: 8px 16px 8px 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            background-color: rgba(90, 90, 90, 0.85); /* 사진과 같은 반투명 회색 */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 9999px; /* 완벽한 타원형 */
+            padding: 5px 10px 5px 5px; /* 컴팩트한 여백 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
         }
         .modern-pill-notification.show {
@@ -90,17 +94,19 @@
 </head>
 <body>
 
+    <!-- ================= 1. 최신 알약 알림 UI ================= -->
     <div id="notification" class="modern-pill-notification">
-        <div id="noti-icon-container" class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
-        <div class="flex items-center gap-2 flex-1 overflow-hidden whitespace-nowrap">
-            <span id="noti-title" class="font-bold text-[14px] text-white truncate max-w-[120px]"></span>
-            <span id="noti-msg" class="text-[14px] text-gray-300 truncate"></span>
+        <div id="noti-icon-container" class="w-[28px] h-[28px] rounded-full flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
+        <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap px-1">
+            <span id="noti-title" class="font-bold text-[13.5px] text-white truncate max-w-[120px]"></span>
+            <span id="noti-msg" class="text-[13.5px] text-white truncate opacity-90"></span>
         </div>
-        <svg class="w-4 h-4 text-gray-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-[14px] h-[14px] text-gray-300 ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
         </svg>
     </div>
 
+    <!-- ================= 2. 시작 화면 ================= -->
     <div id="screen-intro" class="screen active p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full">
             <h1 class="text-3xl font-bold mb-4 text-white">인지 반응 검사</h1>
@@ -110,67 +116,70 @@
                 최대한 빨리 눌러주세요.
             </p>
             
-            <div class="bg-[#424242] p-5 rounded-2xl shadow-sm w-full mb-8 border border-gray-600">
-                <p class="text-xs text-gray-300 mb-3 font-semibold">예시 연습:</p>
+            <div class="bg-[#1f1f1f] p-5 rounded-2xl shadow-sm w-full mb-8 border border-gray-700">
+                <p class="text-xs text-gray-400 mb-3 font-semibold">예시 연습:</p>
                 <div class="flex justify-center items-center gap-4 mb-1">
-                    <span class="text-2xl font-bold tracking-widest" style="color: #4B7DD1;">빨강</span>
+                    <span class="text-2xl font-bold tracking-widest" style="color: #0A3BB8;">빨강</span>
                     <span class="text-xl">👉</span>
-                    <span class="text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md" style="background-color: #4B7DD1;">파랑 버튼</span>
+                    <span class="text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md" style="background-color: #0A3BB8;">파랑 버튼</span>
                 </div>
-                <p class="text-[11px] text-gray-400 text-center mt-3">* 테스트 도중 알림이 발생할 수 있습니다.</p>
+                <p class="text-[11px] text-gray-500 text-center mt-3">* 테스트 도중 상단 알림이 발생할 수 있습니다.</p>
             </div>
 
             <div class="w-full mb-8">
-                <input type="text" id="participant-id" placeholder="참가자 번호 (선택)" class="w-full px-5 py-4 rounded-2xl bg-[#424242] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-[#4B7DD1] focus:ring-1 focus:ring-[#4B7DD1] transition-all text-center text-lg">
+                <input type="text" id="participant-id" placeholder="참가자 번호 (선택)" class="w-full px-5 py-4 rounded-2xl bg-[#1f1f1f] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-[#4B7DD1] focus:ring-1 focus:ring-[#4B7DD1] transition-all text-center text-lg">
             </div>
 
             <button id="btn-start" class="tap-effect w-full py-4 bg-white text-black font-bold rounded-2xl text-xl shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                 실험 시작
             </button>
-            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-400 underline tap-effect">
+            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-500 underline tap-effect">
                 전체화면으로 전환
             </button>
         </div>
     </div>
 
+    <!-- ================= 3. 대기 화면 ================= -->
     <div id="screen-fixation" class="screen justify-center items-center">
-        <div class="text-5xl text-gray-400 font-light">+</div>
+        <div class="text-5xl text-gray-600 font-light">+</div>
     </div>
 
+    <!-- ================= 4. 본 실험 화면 ================= -->
     <div id="screen-task" class="screen">
         <div class="pt-12 px-6 flex justify-between items-center z-10">
-            <div class="w-full bg-[#424242] rounded-full h-1.5">
-                <div id="progress-bar" class="bg-gray-300 h-1.5 rounded-full" style="width: 0%"></div>
+            <div class="w-full bg-[#2a2a2a] rounded-full h-1.5">
+                <div id="progress-bar" class="bg-gray-400 h-1.5 rounded-full" style="width: 0%"></div>
             </div>
-            <span class="text-xs text-gray-400 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
+            <span class="text-xs text-gray-500 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center relative">
             <div id="target-word" class="stroop-text drop-shadow-md"></div>
         </div>
 
-        <!-- 스크린샷과 동일한 파스텔톤 컬러 버튼 -->
+        <!-- 스크린샷에서 정확히 추출한 짙고 비비드한 컬러 버튼 -->
         <div class="grid grid-cols-2 gap-4 p-5 pb-10">
-            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="red" style="background-color: #D15E5E;"></button>
-            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="blue" style="background-color: #4B7DD1;"></button>
-            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="green" style="background-color: #3A9E4C;"></button>
-            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="yellow" style="background-color: #D4A436;"></button>
+            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="red" style="background-color: #A2201C;"></button>
+            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="blue" style="background-color: #0A3BB8;"></button>
+            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="green" style="background-color: #187A1E;"></button>
+            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="yellow" style="background-color: #976214;"></button>
         </div>
     </div>
 
+    <!-- ================= 5. 결과 화면 ================= -->
     <div id="screen-result" class="screen p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
-            <div class="w-24 h-24 bg-[#3A9E4C] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">
+            <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">
                 ✓
             </div>
             <h2 class="text-3xl font-bold mb-3 text-white">실험 종료</h2>
-            <p class="text-gray-300 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
+            <p class="text-gray-400 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
             
             <div class="w-full space-y-4">
-                <button id="btn-download" class="tap-effect w-full py-4 bg-[#4B7DD1] text-white font-bold rounded-2xl text-lg shadow-lg">
+                <button id="btn-download" class="tap-effect w-full py-4 bg-[#0A3BB8] text-white font-bold rounded-2xl text-lg shadow-lg">
                     데이터 다운로드 (CSV)
                 </button>
-                <button id="btn-restart" class="tap-effect w-full py-4 bg-[#424242] text-white font-bold rounded-2xl text-lg border border-gray-600">
+                <button id="btn-restart" class="tap-effect w-full py-4 bg-[#1f1f1f] text-white font-bold rounded-2xl text-lg border border-gray-700">
                     다시 하기
                 </button>
             </div>
@@ -178,7 +187,7 @@
     </div>
 
     <script>
-        // ================= 2. Supabase DB 연결 변수 설정 =================
+        // ================= 2. Supabase DB 연결 =================
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -191,27 +200,28 @@
             notiDuration: 4000           
         };
 
-        // 스크린샷과 정확히 일치하는 컬러코드 적용
+        // 스크린샷에서 정확히 추출한 짙은 컬러들
         const COLORS = [
-            { id: 'red', name: '빨강', hex: '#D15E5E' },
-            { id: 'blue', name: '파랑', hex: '#4B7DD1' },
-            { id: 'green', name: '초록', hex: '#3A9E4C' },
-            { id: 'yellow', name: '노랑', hex: '#D4A436' }
+            { id: 'red', name: '빨강', hex: '#A2201C' },
+            { id: 'blue', name: '파랑', hex: '#0A3BB8' },
+            { id: 'green', name: '초록', hex: '#187A1E' },
+            { id: 'yellow', name: '노랑', hex: '#976214' }
         ];
 
+        // 작은 알약 알림에 최적화된 아이콘
         const ICONS = {
             instagram: `<div class="absolute inset-0 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]"></div>
-                        <div class="w-[16px] h-[16px] border-[1.5px] border-white rounded-[4.5px] flex items-center justify-center relative z-10">
-                        <div class="w-[7px] h-[7px] border-[1.5px] border-white rounded-full"></div>
+                        <div class="w-[14px] h-[14px] border-[1.5px] border-white rounded-[4px] flex items-center justify-center relative z-10">
+                        <div class="w-[6px] h-[6px] border-[1.5px] border-white rounded-full"></div>
                         <div class="w-[1.5px] h-[1.5px] bg-white rounded-full absolute top-[1px] right-[1px]"></div></div>`,
             kakaotalk: `<div class="absolute inset-0 bg-[#FEE500]"></div>
-                        <svg class="relative z-10 w-[18px] h-[18px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
+                        <svg class="relative z-10 w-[16px] h-[16px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
+        // 요청하신 이미지에 있는 텍스트 그대로 적용
         const NOTIFICATIONS = [
-            { iconHtml: ICONS.instagram, title: 'Instagram', msg: 'user_123님이 회원님의 게시물을 좋아합니다.' },
-            { iconHtml: ICONS.kakaotalk, title: '김철수', msg: '야 오늘 저녁에 시간 됨? 맛있는거 먹자 ㅋㅋㅋ' },
-            { iconHtml: ICONS.kakaotalk, title: '어머니', msg: '언제 들어오니? 밥 차려놓을까?' }
+            { iconHtml: ICONS.instagram, title: '(mini_o4o6)', msg: '민기모... ?ㅋㅋ' },
+            { iconHtml: ICONS.kakaotalk, title: 'IC-PBL센터(4879)', msg: '사진을 보냈습니다.' }
         ];
 
         let currentTrial = 0;
@@ -343,7 +353,7 @@
             trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
             trialData[currentTrial - 1].reactionTimeMs = reactionTime;
 
-            // ================= 3. DB 실시간 전송 (그대로 유지) =================
+            // DB 전송
             if (db) {
                 db.from('Trials').insert([
                     { 
@@ -355,7 +365,6 @@
                     }
                 ]).then(({ error }) => {
                     if (error) console.error('DB 전송 에러:', error);
-                    else console.log(`${currentTrial}번 문제 DB 전송 완료`);
                 });
             }
 
