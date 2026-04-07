@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="인지 실험">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#353535">
 
     <title>알림 방해 인지 실험 (Stroop Task)</title>
     
@@ -23,7 +23,7 @@
             width: 100vw;
             height: 100vh;
             font-family: 'Pretendard', -apple-system, sans-serif;
-            background-color: #1a1a1a;
+            background-color: #353535; /* 스크린샷과 동일한 진회색 배경 */
             color: white;
             overflow: hidden;
             touch-action: manipulation;
@@ -38,19 +38,21 @@
             position: absolute;
             top: 0;
             left: 0;
+            background-color: #353535;
         }
         .screen.active {
             display: flex;
         }
 
         .stroop-text {
-            font-size: 4.5rem;
+            font-size: 5rem;
             font-weight: 800;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.05em;
             user-select: none;
             text-align: center;
         }
 
+        /* 최신 알약(Pill) 알림 - 색상 조정 */
         .modern-pill-notification {
             position: absolute;
             top: calc(env(safe-area-inset-top, 20px) + 15px);
@@ -58,17 +60,15 @@
             transform: translate(-50%, -200%);
             width: fit-content;
             max-width: 92%;
-            background-color: rgba(75, 75, 75, 0.85);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background-color: #424242; /* 스크린샷 알림창 배경색 */
             border-radius: 9999px;
-            padding: 6px 14px 6px 6px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            padding: 8px 16px 8px 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
         }
         .modern-pill-notification.show {
@@ -91,12 +91,12 @@
 <body>
 
     <div id="notification" class="modern-pill-notification">
-        <div id="noti-icon-container" class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
-        <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap">
-            <span id="noti-title" class="font-bold text-[13px] text-white truncate max-w-[100px]"></span>
-            <span id="noti-msg" class="text-[13px] text-gray-300 truncate"></span>
+        <div id="noti-icon-container" class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
+        <div class="flex items-center gap-2 flex-1 overflow-hidden whitespace-nowrap">
+            <span id="noti-title" class="font-bold text-[14px] text-white truncate max-w-[120px]"></span>
+            <span id="noti-msg" class="text-[14px] text-gray-300 truncate"></span>
         </div>
-        <svg class="w-3.5 h-3.5 text-gray-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-4 h-4 text-gray-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
         </svg>
     </div>
@@ -110,66 +110,67 @@
                 최대한 빨리 눌러주세요.
             </p>
             
-            <div class="bg-gray-800 p-5 rounded-2xl shadow-sm w-full mb-8 border border-gray-700">
-                <p class="text-xs text-gray-400 mb-3 font-semibold">예시 연습:</p>
+            <div class="bg-[#424242] p-5 rounded-2xl shadow-sm w-full mb-8 border border-gray-600">
+                <p class="text-xs text-gray-300 mb-3 font-semibold">예시 연습:</p>
                 <div class="flex justify-center items-center gap-4 mb-1">
-                    <span class="text-2xl font-bold tracking-widest" style="color: #3b82f6;">빨강</span>
+                    <span class="text-2xl font-bold tracking-widest" style="color: #4B7DD1;">빨강</span>
                     <span class="text-xl">👉</span>
-                    <span class="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md">파랑 버튼</span>
+                    <span class="text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md" style="background-color: #4B7DD1;">파랑 버튼</span>
                 </div>
-                <p class="text-[11px] text-gray-500 text-center mt-3">* 테스트 도중 알림이 발생할 수 있습니다.</p>
+                <p class="text-[11px] text-gray-400 text-center mt-3">* 테스트 도중 알림이 발생할 수 있습니다.</p>
             </div>
 
             <div class="w-full mb-8">
-                <input type="text" id="participant-id" placeholder="참가자 번호 (선택)" class="w-full px-5 py-4 rounded-2xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg">
+                <input type="text" id="participant-id" placeholder="참가자 번호 (선택)" class="w-full px-5 py-4 rounded-2xl bg-[#424242] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-[#4B7DD1] focus:ring-1 focus:ring-[#4B7DD1] transition-all text-center text-lg">
             </div>
 
             <button id="btn-start" class="tap-effect w-full py-4 bg-white text-black font-bold rounded-2xl text-xl shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                 실험 시작
             </button>
-            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-500 underline tap-effect">
+            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-400 underline tap-effect">
                 전체화면으로 전환
             </button>
         </div>
     </div>
 
-    <div id="screen-fixation" class="screen justify-center items-center bg-[#1a1a1a]">
-        <div class="text-5xl text-gray-500 font-light">+</div>
+    <div id="screen-fixation" class="screen justify-center items-center">
+        <div class="text-5xl text-gray-400 font-light">+</div>
     </div>
 
-    <div id="screen-task" class="screen bg-[#1a1a1a]">
+    <div id="screen-task" class="screen">
         <div class="pt-12 px-6 flex justify-between items-center z-10">
-            <div class="w-full bg-gray-800 rounded-full h-1.5">
-                <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full" style="width: 0%"></div>
+            <div class="w-full bg-[#424242] rounded-full h-1.5">
+                <div id="progress-bar" class="bg-gray-300 h-1.5 rounded-full" style="width: 0%"></div>
             </div>
-            <span class="text-xs text-gray-500 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
+            <span class="text-xs text-gray-400 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center relative">
             <div id="target-word" class="stroop-text drop-shadow-md"></div>
         </div>
 
+        <!-- 스크린샷과 동일한 파스텔톤 컬러 버튼 -->
         <div class="grid grid-cols-2 gap-4 p-5 pb-10">
-            <button class="color-btn py-10 rounded-[2rem] font-bold text-white shadow-lg text-2xl" data-color="red" style="background-color: #ef4444;"></button>
-            <button class="color-btn py-10 rounded-[2rem] font-bold text-white shadow-lg text-2xl" data-color="blue" style="background-color: #3b82f6;"></button>
-            <button class="color-btn py-10 rounded-[2rem] font-bold text-white shadow-lg text-2xl" data-color="green" style="background-color: #22c55e;"></button>
-            <button class="color-btn py-10 rounded-[2rem] font-bold text-gray-900 shadow-lg text-2xl" data-color="yellow" style="background-color: #facc15;"></button>
+            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="red" style="background-color: #D15E5E;"></button>
+            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="blue" style="background-color: #4B7DD1;"></button>
+            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="green" style="background-color: #3A9E4C;"></button>
+            <button class="color-btn py-12 rounded-[1.5rem] shadow-md" data-color="yellow" style="background-color: #D4A436;"></button>
         </div>
     </div>
 
     <div id="screen-result" class="screen p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
-            <div class="w-24 h-24 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+            <div class="w-24 h-24 bg-[#3A9E4C] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">
                 ✓
             </div>
             <h2 class="text-3xl font-bold mb-3 text-white">실험 종료</h2>
-            <p class="text-gray-400 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
+            <p class="text-gray-300 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
             
             <div class="w-full space-y-4">
-                <button id="btn-download" class="tap-effect w-full py-4 bg-blue-600 text-white font-bold rounded-2xl text-lg shadow-lg">
+                <button id="btn-download" class="tap-effect w-full py-4 bg-[#4B7DD1] text-white font-bold rounded-2xl text-lg shadow-lg">
                     데이터 다운로드 (CSV)
                 </button>
-                <button id="btn-restart" class="tap-effect w-full py-4 bg-gray-800 text-white font-bold rounded-2xl text-lg border border-gray-700">
+                <button id="btn-restart" class="tap-effect w-full py-4 bg-[#424242] text-white font-bold rounded-2xl text-lg border border-gray-600">
                     다시 하기
                 </button>
             </div>
@@ -190,24 +191,24 @@
             notiDuration: 4000           
         };
 
+        // 스크린샷과 정확히 일치하는 컬러코드 적용
         const COLORS = [
-            { id: 'red', name: '빨강', hex: '#ef4444' },
-            { id: 'blue', name: '파랑', hex: '#3b82f6' },
-            { id: 'green', name: '초록', hex: '#22c55e' },
-            { id: 'yellow', name: '노랑', hex: '#facc15' }
+            { id: 'red', name: '빨강', hex: '#D15E5E' },
+            { id: 'blue', name: '파랑', hex: '#4B7DD1' },
+            { id: 'green', name: '초록', hex: '#3A9E4C' },
+            { id: 'yellow', name: '노랑', hex: '#D4A436' }
         ];
 
         const ICONS = {
             instagram: `<div class="absolute inset-0 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]"></div>
-                        <div class="w-[14px] h-[14px] border-[1.5px] border-white rounded-[4px] flex items-center justify-center relative z-10">
-                        <div class="w-[6px] h-[6px] border-[1.5px] border-white rounded-full"></div>
+                        <div class="w-[16px] h-[16px] border-[1.5px] border-white rounded-[4.5px] flex items-center justify-center relative z-10">
+                        <div class="w-[7px] h-[7px] border-[1.5px] border-white rounded-full"></div>
                         <div class="w-[1.5px] h-[1.5px] bg-white rounded-full absolute top-[1px] right-[1px]"></div></div>`,
             kakaotalk: `<div class="absolute inset-0 bg-[#FEE500]"></div>
-                        <svg class="relative z-10 w-4 h-4 text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
+                        <svg class="relative z-10 w-[18px] h-[18px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
         const NOTIFICATIONS = [
-            { iconHtml: ICONS.instagram, title: '(mini_o4o6)', msg: '민기모... ?ㅋㅋ' },
             { iconHtml: ICONS.instagram, title: 'Instagram', msg: 'user_123님이 회원님의 게시물을 좋아합니다.' },
             { iconHtml: ICONS.kakaotalk, title: '김철수', msg: '야 오늘 저녁에 시간 됨? 맛있는거 먹자 ㅋㅋㅋ' },
             { iconHtml: ICONS.kakaotalk, title: '어머니', msg: '언제 들어오니? 밥 차려놓을까?' }
@@ -342,7 +343,7 @@
             trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
             trialData[currentTrial - 1].reactionTimeMs = reactionTime;
 
-            // ================= 3. DB 실시간 전송 (여기 추가됨!) =================
+            // ================= 3. DB 실시간 전송 (그대로 유지) =================
             if (db) {
                 db.from('Trials').insert([
                     { 
