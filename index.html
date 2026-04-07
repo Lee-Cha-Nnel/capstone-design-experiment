@@ -52,16 +52,16 @@
             text-align: center;
         }
 
-        /* 📱 최신 안드로이드 알약(Pill) 팝업 알림 스타일 - 버그 완벽 수정 */
+        /* 📱 최신 안드로이드 알약(Pill) 팝업 알림 스타일 - 노치 버그 완벽 수정 */
         .modern-pill-notification {
             position: absolute;
             top: 0; /* 기준점을 맨 위로 변경 */
             left: 50%;
-            /* 평소에는 무조건 화면 밖으로 200px 올려버림 (잔상 버그 완벽 차단) */
-            transform: translate(-50%, -200px);
+            /* 화면 밖으로 150px 완전히 치워둠 (잔상 버그 해결) */
+            transform: translate(-50%, -150px);
             width: fit-content;
             max-width: 92%;
-            background-color: rgba(112, 112, 112, 0.95); /* 요청하신 #707070 색상 */
+            background-color: rgba(112, 112, 112, 0.95); /* #707070 색상 */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 9999px; 
@@ -75,7 +75,7 @@
             cursor: pointer;
         }
         .modern-pill-notification.show {
-            /* 나타날 때는 상단 안전영역 + 여백만큼만 내려옴 */
+            /* 나타날 때는 안전영역만큼만 내려옴 */
             transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 12px));
         }
 
@@ -94,7 +94,6 @@
 </head>
 <body>
 
-    <!-- ================= 1. 최신 알약 알림 UI ================= -->
     <div id="notification" class="modern-pill-notification">
         <div id="noti-icon-container" class="w-[28px] h-[28px] rounded-[10px] flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
         <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap px-1">
@@ -106,7 +105,6 @@
         </svg>
     </div>
 
-    <!-- ================= 2. 시작 화면 ================= -->
     <div id="screen-intro" class="screen active p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full">
             <h1 class="text-3xl font-bold mb-4 text-white">인지 반응 검사</h1>
@@ -133,18 +131,13 @@
             <button id="btn-start" class="tap-effect w-full py-4 bg-white text-black font-bold rounded-2xl text-xl shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                 실험 시작
             </button>
-            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-500 underline tap-effect">
-                전체화면으로 전환
-            </button>
         </div>
     </div>
 
-    <!-- ================= 3. 대기 화면 ================= -->
     <div id="screen-fixation" class="screen justify-center items-center">
         <div class="text-5xl text-gray-600 font-light">+</div>
     </div>
 
-    <!-- ================= 4. 본 실험 화면 ================= -->
     <div id="screen-task" class="screen">
         <div class="pt-12 px-6 flex justify-between items-center z-10">
             <div class="w-full bg-[#2a2a2a] rounded-full h-1.5">
@@ -165,7 +158,6 @@
         </div>
     </div>
 
-    <!-- ================= 5. 결과 화면 ================= -->
     <div id="screen-result" class="screen p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
             <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">
@@ -186,7 +178,7 @@
     </div>
 
     <script>
-        // ================= 2. Supabase DB 연결 =================
+        // ================= Supabase DB 연결 =================
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -206,7 +198,7 @@
             { id: 'yellow', name: '노랑', hex: '#976214' }
         ];
 
-        // 요청하신 인스타그램 로고(#26ba61)의 정확한 그라데이션 및 디자인을 SVG로 완벽 반영
+        // 인스타그램 로고 SVG 및 그라데이션
         const ICONS = {
             instagram: `<div class="absolute inset-0" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"></div>
                         <svg class="relative z-10 w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -218,8 +210,9 @@
                         <svg class="relative z-10 w-[16px] h-[16px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
+        // (중요) 변경하신 텍스트가 정확히 적용된 알림 데이터
         const NOTIFICATIONS = [
-            { iconHtml: ICONS.instagram, title: 'User_o4o6:', msg: '지훈 ㅋㅋㅋㅋㅋㅋㅋㅋ' },
+            { iconHtml: ICONS.instagram, title: 'User_o4o6', msg: '지훈 ㅋㅋㅋㅋㅋㅋㅋㅋ' },
             { iconHtml: ICONS.kakaotalk, title: '경상국립대학교', msg: '사진을 보냈습니다.' }
         ];
 
@@ -352,7 +345,6 @@
             trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
             trialData[currentTrial - 1].reactionTimeMs = reactionTime;
 
-            // DB 전송
             if (db) {
                 db.from('Trials').insert([
                     { 
@@ -414,12 +406,6 @@
 
         document.getElementById('btn-restart').addEventListener('click', () => {
             showScreen('intro');
-        });
-
-        document.getElementById('btn-fullscreen').addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(e => console.log(e));
-            }
         });
     </script>
 </body>
