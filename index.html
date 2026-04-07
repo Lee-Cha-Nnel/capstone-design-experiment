@@ -26,7 +26,7 @@
             background-color: #1a1a1a;
             color: white;
             overflow: hidden;
-            touch-action: manipulation; 
+            touch-action: manipulation;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -51,42 +51,28 @@
             text-align: center;
         }
 
-        /* ✨ 최신 안드로이드 스타일 알약형 알림 */
-        .android-notification {
+        .modern-pill-notification {
             position: absolute;
-            top: calc(env(safe-area-inset-top, 20px) + 12px);
+            top: calc(env(safe-area-inset-top, 20px) + 15px);
             left: 50%;
-            transform: translateX(-50%) translateY(-150%);
-            background-color: rgba(30, 30, 30, 0.75);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 60px;
-            padding: 6px 18px 6px 6px;
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), inset 0 0.5px 1px rgba(255, 255, 255, 0.1);
-            border: 0.5px solid rgba(255, 255, 255, 0.08);
-            transition: transform 0.7s cubic-bezier(0.2, 1, 0.3, 1);
+            transform: translate(-50%, -200%);
+            width: fit-content;
+            max-width: 92%;
+            background-color: rgba(75, 75, 75, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 9999px;
+            padding: 6px 14px 6px 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             cursor: pointer;
-            min-width: 260px;
-            max-width: 85%;
         }
-        
-        .android-notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        #noti-icon-container {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .modern-pill-notification.show {
+            transform: translate(-50%, 0);
         }
 
         .tap-effect:active {
@@ -104,15 +90,15 @@
 </head>
 <body>
 
-    <div id="notification" class="android-notification">
-        <div id="noti-icon-container" class="relative shadow-sm"></div>
-        <div class="flex-1 overflow-hidden py-1">
-            <div class="flex items-center gap-2 mb-0.5">
-                <span id="noti-title" class="font-bold text-[13px] text-white truncate tracking-tight"></span>
-                <span class="text-[11px] text-gray-400 whitespace-nowrap opacity-70">• 지금</span>
-            </div>
-            <div id="noti-msg" class="text-[13px] text-gray-200 leading-tight truncate"></div>
+    <div id="notification" class="modern-pill-notification">
+        <div id="noti-icon-container" class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
+        <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap">
+            <span id="noti-title" class="font-bold text-[13px] text-white truncate max-w-[100px]"></span>
+            <span id="noti-msg" class="text-[13px] text-gray-300 truncate"></span>
         </div>
+        <svg class="w-3.5 h-3.5 text-gray-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+        </svg>
     </div>
 
     <div id="screen-intro" class="screen active p-6">
@@ -135,7 +121,7 @@
             </div>
 
             <div class="w-full mb-8">
-                <input type="number" id="participant-id" placeholder="참가자 번호 (숫자만)" class="w-full px-5 py-4 rounded-2xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg">
+                <input type="text" id="participant-id" placeholder="참가자 번호 (선택)" class="w-full px-5 py-4 rounded-2xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center text-lg">
             </div>
 
             <button id="btn-start" class="tap-effect w-full py-4 bg-white text-black font-bold rounded-2xl text-xl shadow-[0_0_20px_rgba(255,255,255,0.15)]">
@@ -191,17 +177,17 @@
     </div>
 
     <script>
-        // ================= Supabase 연결 설정 =================
+        // ================= 2. Supabase DB 연결 변수 설정 =================
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // =======================================================
 
+        // ================= 설정 및 데이터 =================
         const CONFIG = {
             totalTrials: 20,             
-            fixationTime: 600,            
+            fixationTime: 600,           
             notiProbability: 0.25,       
-            notiDuration: 4000            
+            notiDuration: 4000           
         };
 
         const COLORS = [
@@ -213,22 +199,22 @@
 
         const ICONS = {
             instagram: `<div class="absolute inset-0 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]"></div>
-                        <div class="w-[22px] h-[22px] border-[2px] border-white rounded-[6px] flex items-center justify-center relative z-10">
-                        <div class="w-[10px] h-[10px] border-[2px] border-white rounded-full"></div>
-                        <div class="w-[2.5px] h-[2.5px] bg-white rounded-full absolute top-[3px] right-[3px]"></div></div>`,
+                        <div class="w-[14px] h-[14px] border-[1.5px] border-white rounded-[4px] flex items-center justify-center relative z-10">
+                        <div class="w-[6px] h-[6px] border-[1.5px] border-white rounded-full"></div>
+                        <div class="w-[1.5px] h-[1.5px] bg-white rounded-full absolute top-[1px] right-[1px]"></div></div>`,
             kakaotalk: `<div class="absolute inset-0 bg-[#FEE500]"></div>
-                        <div class="relative z-10 text-[#374151] font-black text-[16px] tracking-tighter mt-1">TALK</div>`
+                        <svg class="relative z-10 w-4 h-4 text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
         const NOTIFICATIONS = [
-            { iconHtml: ICONS.instagram, title: 'in.thummmb_95', msg: 'OOO(OOO)님이 회원님을 팔로우하기 시작했습니다.' },
+            { iconHtml: ICONS.instagram, title: '(mini_o4o6)', msg: '민기모... ?ㅋㅋ' },
             { iconHtml: ICONS.instagram, title: 'Instagram', msg: 'user_123님이 회원님의 게시물을 좋아합니다.' },
             { iconHtml: ICONS.kakaotalk, title: '김철수', msg: '야 오늘 저녁에 시간 됨? 맛있는거 먹자 ㅋㅋㅋ' },
             { iconHtml: ICONS.kakaotalk, title: '어머니', msg: '언제 들어오니? 밥 차려놓을까?' }
         ];
 
         let currentTrial = 0;
-        let participantId = 1; 
+        let participantId = "";
         let trialData = [];
         let currentTargetColorId = "";
         let currentTargetWord = "";
@@ -277,9 +263,7 @@
         }
 
         document.getElementById('btn-start').addEventListener('click', () => {
-            const inputId = parseInt(document.getElementById('participant-id').value);
-            participantId = isNaN(inputId) ? Math.floor(Math.random() * 10000) + 1 : inputId;
-            
+            participantId = document.getElementById('participant-id').value || `Subj_${Math.floor(Math.random()*10000)}`;
             currentTrial = 0;
             trialData = [];
             progressBarEl.style.width = '0%';
@@ -354,12 +338,11 @@
             
             const phaseNum = isNotiVisible ? 1 : 0;
 
-            // 1. CSV 용 데이터 저장
             trialData[currentTrial - 1].responseColorId = selectedColorId;
             trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
             trialData[currentTrial - 1].reactionTimeMs = reactionTime;
 
-            // 2. Supabase DB 실시간 전송 (테이블 이름 Trials)
+            // ================= 3. DB 실시간 전송 (여기 추가됨!) =================
             if (db) {
                 db.from('Trials').insert([
                     { 
