@@ -62,7 +62,7 @@
             max-width: 90%;
             background-color: #212121; /* 스크린샷 픽셀 추출 색상 (무광 다크그레이) */
             border-radius: 9999px; 
-            padding: 5px 14px 5px 5px; /* 매우 타이트한 상하 패딩으로 슬림한 핏 구현 */
+            padding: 4px 14px 4px 4px; /* [수정됨] 위아래 패딩을 4px로 줄여 세로폭을 아주 슬림하게 변경 */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
@@ -111,17 +111,20 @@
 
     <!-- 1. 알림 팝업 UI (글자 크기, 간격, 수직 중앙 정렬 완벽 구현) -->
     <div id="notification" class="modern-pill-notification">
-        <div id="noti-icon-container" class="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
+        <!-- [수정됨] 아이콘 컨테이너 크기 축소 28px -> 24px -->
+        <div id="noti-icon-container" class="w-[24px] h-[24px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
         <div class="flex items-center flex-1 overflow-hidden whitespace-nowrap pl-2.5 pr-1">
-            <span id="noti-title" class="font-bold text-[13.5px] text-white tracking-tight flex-shrink-0"></span>
-            <span id="noti-msg" class="text-[13.5px] text-[#9A9A9A] truncate font-normal tracking-tight ml-1.5"></span>
+            <!-- [수정됨] 글자 크기 미세 축소 13.5px -> 13px -->
+            <span id="noti-title" class="font-bold text-[13px] text-white tracking-tight flex-shrink-0"></span>
+            <span id="noti-msg" class="text-[13px] text-[#9A9A9A] truncate font-normal tracking-tight ml-1.5"></span>
         </div>
-        <svg class="w-[12px] h-[12px] text-[#6B6B6B] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- [수정됨] 화살표 크기 미세 축소 12px -> 11px -->
+        <svg class="w-[11px] h-[11px] text-[#6B6B6B] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 9l6 6 6-6"></path>
         </svg>
     </div>
 
-    <!-- 2. 시작 화면 -->
+    <!-- 2. 시작 화면 (질문 문구 및 레이아웃 고도화) -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
             <h1 class="text-3xl font-bold mb-3 text-white">산수 반응 검사</h1>
@@ -263,7 +266,8 @@
         // 인스타그램 아이콘 그라데이션 및 로고 굵기 정밀 조정
         const ICONS = {
             instagram: `<div class="absolute inset-0 rounded-full" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"></div>
-                        <svg class="relative z-10 w-[16px] h-[16px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- [수정됨] 내부 svg 카메라 아이콘 크기 축소 16px -> 14px -->
+                        <svg class="relative z-10 w-[14px] h-[14px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="3"></line>
