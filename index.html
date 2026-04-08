@@ -628,7 +628,7 @@
         document.getElementById('btn-download-local').addEventListener('click', () => {
             if (trialData.length === 0) return;
             
-            const headers = ['Exp_Num', 'Group_Type', 'Trial', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Fired', 'Correct', 'Reaction_Time_ms'];
+            const headers = ['Exp_Num', 'Group_Type', 'Question', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Fired', 'Correct', 'Reaction_Time_ms'];
             const csvRows = [headers.join(',')];
 
             trialData.forEach(row => {
