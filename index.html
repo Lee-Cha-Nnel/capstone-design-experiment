@@ -52,7 +52,7 @@
             text-align: center;
         }
 
-        /* 📱 안드로이드 짙은 회색 알약(Pill) 팝업 정밀 튜닝 (새로운 이미지 기준) */
+        /* 📱 인스타그램 다크모드 99.9% 싱크로율 튜닝 */
         .modern-pill-notification {
             position: absolute;
             top: 0; 
@@ -60,9 +60,9 @@
             transform: translate(-50%, -150px);
             width: fit-content;
             max-width: 92%;
-            background-color: #71706E; /* 새 이미지에서 추출한 짙은 회색(웜그레이) 배경 */
+            background-color: #212121; /* 다시 세련된 블랙/다크그레이로 복구 */
             border-radius: 9999px; 
-            padding: 6px 16px 6px 6px; /* 얇았던 위아래 여백을 도톰하게(6px) 늘림 */
+            padding: 4px 14px 4px 4px; /* 슬림한 핏으로 패딩 복구 */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
@@ -111,14 +111,12 @@
 
     <!-- 1. 알림 팝업 UI (글자 크기, 간격, 수직 중앙 정렬 완벽 구현) -->
     <div id="notification" class="modern-pill-notification">
-        <!-- 아이콘 컨테이너 크기를 배너 두께에 맞춰 살짝 키움 (24px -> 28px) -->
-        <div id="noti-icon-container" class="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
+        <div id="noti-icon-container" class="w-[24px] h-[24px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
         <div class="flex items-center flex-1 overflow-hidden whitespace-nowrap pl-2 pr-1">
-            <!-- 텍스트 사이즈를 기존보다 살짝 크게(14px) 조정하여 가독성 및 안드로이드 비율 일치 -->
-            <span id="noti-title" class="font-bold text-[14px] text-white tracking-tight flex-shrink-0"></span>
-            <span id="noti-msg" class="text-[14px] text-[#EBEBEB] truncate font-normal tracking-tight ml-1.5"></span>
+            <span id="noti-title" class="font-bold text-[13px] text-white tracking-tight flex-shrink-0"></span>
+            <span id="noti-msg" class="text-[13px] text-[#9A9A9A] truncate font-normal tracking-tight ml-1.5"></span>
         </div>
-        <svg class="w-[12px] h-[12px] text-[#D0D0D0] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-[11px] h-[11px] text-[#6B6B6B] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 9l6 6 6-6"></path>
         </svg>
     </div>
@@ -269,8 +267,7 @@
 
         const ICONS = {
             instagram: `<div class="absolute inset-0 rounded-full" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"></div>
-                        <!-- 카메라 아이콘 크기도 배너 두께에 맞게 약간 조정(14px -> 16px) -->
-                        <svg class="relative z-10 w-[16px] h-[16px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="relative z-10 w-[14px] h-[14px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="3"></line>
