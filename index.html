@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
 
-    <title>알림 방해 인지 실험 (Stroop Task)</title>
+    <title>알림 방해 인지 실험 (산수 과제 & 관리자 모드)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -44,24 +44,22 @@
             display: flex;
         }
 
-        .stroop-text {
-            font-size: 5rem;
+        .math-text {
+            font-size: 4.5rem;
             font-weight: 800;
             letter-spacing: 0.05em;
             user-select: none;
             text-align: center;
         }
 
-        /* 📱 최신 안드로이드 알약(Pill) 팝업 알림 스타일 - 노치 버그 완벽 수정 */
         .modern-pill-notification {
             position: absolute;
-            top: 0; /* 기준점을 맨 위로 변경 */
+            top: 0; 
             left: 50%;
-            /* 화면 밖으로 150px 완전히 치워둠 (잔상 버그 해결) */
             transform: translate(-50%, -150px);
             width: fit-content;
             max-width: 92%;
-            background-color: rgba(112, 112, 112, 0.95); /* #707070 색상 */
+            background-color: rgba(112, 112, 112, 0.95); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 9999px; 
@@ -75,7 +73,6 @@
             cursor: pointer;
         }
         .modern-pill-notification.show {
-            /* 나타날 때는 안전영역만큼만 내려옴 */
             transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 12px));
         }
 
@@ -84,17 +81,38 @@
             transform: scale(0.96);
         }
         
-        .color-btn {
-            transition: transform 0.1s;
+        .color-btn { 
+            transition: transform 0.1s; 
+            font-size: 2.5rem !important; 
         }
-        .color-btn:active {
-            transform: scale(0.92);
+        .color-btn:active { transform: scale(0.92); }
+
+        .custom-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+            background-color: #1f1f1f;
+            border: 1px solid #374151;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s;
         }
+        .custom-input:focus {
+            outline: none;
+            border-color: #4B7DD1;
+            box-shadow: 0 0 0 1px #4B7DD1;
+        }
+        .custom-input::placeholder { color: #6b7280; }
+
+        /* 관리자 테이블 스크롤바 커스텀 */
+        .admin-table-container::-webkit-scrollbar { width: 6px; height: 6px; }
+        .admin-table-container::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
+        .admin-table-container::-webkit-scrollbar-track { background: #1f1f1f; }
     </style>
 </head>
 <body>
 
-    <!-- ================= 1. 최신 알약 알림 UI ================= -->
+    <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification">
         <div id="noti-icon-container" class="w-[28px] h-[28px] rounded-[10px] flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
         <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap px-1">
@@ -106,52 +124,36 @@
         </svg>
     </div>
 
-    <!-- ================= 2. 시작 화면 ================= -->
+    <!-- 2. 시작 화면 -->
     <div id="screen-intro" class="screen active p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full">
-            <h1 class="text-3xl font-bold mb-4 text-white">인지 반응 검사</h1>
-            <p class="text-gray-400 mb-8 text-center text-[15px] leading-relaxed">
-                화면 중앙에 나타나는 단어의 <strong>'의미'</strong>가 아닌,<br>
-                글자의 <strong class="text-white">'실제 색상'</strong>에 해당하는 하단 버튼을<br>
-                최대한 빨리 눌러주세요.
+            <h1 class="text-3xl font-bold mb-2 text-white">산수 반응 검사</h1>
+            <p class="text-gray-400 mb-6 text-center text-[14px] leading-relaxed">
+                화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
+                하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
             </p>
             
-            <div class="bg-[#1f1f1f] p-5 rounded-2xl shadow-sm w-full mb-8 border border-gray-700">
-                <p class="text-xs text-gray-400 mb-3 font-semibold">예시 연습:</p>
-                <div class="flex justify-center items-center gap-4 mb-1">
-                    <span class="text-2xl font-bold tracking-widest" style="color: #0A3BB8;">빨강</span>
-                    <span class="text-xl">👉</span>
-                    <span class="text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md" style="background-color: #0A3BB8;">파랑 버튼</span>
-                </div>
-                <p class="text-[11px] text-gray-500 text-center mt-3">* 테스트 도중 상단 알림이 발생할 수 있습니다.</p>
-            </div>
-
-            <div class="w-full mb-8">
-                <input type="text" id="participant-id" placeholder="참가자 번호 (예: 1000)" class="w-full px-5 py-4 rounded-2xl bg-[#1f1f1f] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-[#4B7DD1] focus:ring-1 focus:ring-[#4B7DD1] transition-all text-center text-lg">
+            <div class="w-full mb-8 space-y-3">
+                <input type="text" id="exp-number" class="custom-input" placeholder="실험번호 (예: 1000)">
+                <input type="text" id="lover-name" class="custom-input" placeholder="저장된 애인 애칭 (예: 내사랑)">
+                <input type="text" id="ad-name" class="custom-input" placeholder="자주 보는 쇼핑몰/광고 (예: 무신사)">
             </div>
 
             <button id="btn-start" class="tap-effect w-full py-4 bg-white text-black font-bold rounded-2xl text-xl shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                 실험 시작
             </button>
-            
-            <!-- 전체화면 전환 버튼 복구 완료 -->
             <button id="btn-fullscreen" class="mt-6 text-sm text-gray-500 underline tap-effect">
                 전체화면으로 전환
             </button>
-
-            <!-- 깃허브 전체화면 안내 문구 (선택 사항) -->
-            <div class="mt-8 px-4 py-3 bg-[#1f1f1f] rounded-2xl border border-gray-800 text-[11px] text-gray-400 text-center w-full">
-                전체 화면을 종료하려면 상단에서 드래그한 후 뒤로 가기를 터치하세요.
-            </div>
         </div>
     </div>
 
-    <!-- ================= 3. 대기 화면 ================= -->
+    <!-- 3. 대기 화면 -->
     <div id="screen-fixation" class="screen justify-center items-center">
         <div class="text-5xl text-gray-600 font-light">+</div>
     </div>
 
-    <!-- ================= 4. 본 실험 화면 ================= -->
+    <!-- 4. 본 실험 화면 (산수 과제) -->
     <div id="screen-task" class="screen">
         <div class="pt-12 px-6 flex justify-between items-center z-10">
             <div class="w-full bg-[#2a2a2a] rounded-full h-1.5">
@@ -161,29 +163,27 @@
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center relative">
-            <div id="target-word" class="stroop-text drop-shadow-md"></div>
+            <div id="target-equation" class="math-text text-white drop-shadow-md"></div>
         </div>
 
         <div class="grid grid-cols-2 gap-4 p-5 pb-10">
-            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="red" style="background-color: #A2201C;"></button>
-            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="blue" style="background-color: #0A3BB8;"></button>
-            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="green" style="background-color: #187A1E;"></button>
-            <button class="color-btn py-12 rounded-[1.8rem] shadow-md" data-color="yellow" style="background-color: #976214;"></button>
+            <button id="ans-btn-0" class="color-btn py-12 rounded-[1.8rem] shadow-md font-bold text-white" style="background-color: #A2201C;"></button>
+            <button id="ans-btn-1" class="color-btn py-12 rounded-[1.8rem] shadow-md font-bold text-white" style="background-color: #0A3BB8;"></button>
+            <button id="ans-btn-2" class="color-btn py-12 rounded-[1.8rem] shadow-md font-bold text-white" style="background-color: #187A1E;"></button>
+            <button id="ans-btn-3" class="color-btn py-12 rounded-[1.8rem] shadow-md font-bold text-white" style="background-color: #976214;"></button>
         </div>
     </div>
 
-    <!-- ================= 5. 결과 화면 ================= -->
+    <!-- 5. 결과 화면 -->
     <div id="screen-result" class="screen p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
-            <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">
-                ✓
-            </div>
+            <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">✓</div>
             <h2 class="text-3xl font-bold mb-3 text-white">실험 종료</h2>
             <p class="text-gray-400 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
             
             <div class="w-full space-y-4">
-                <button id="btn-download" class="tap-effect w-full py-4 bg-[#0A3BB8] text-white font-bold rounded-2xl text-lg shadow-lg">
-                    데이터 다운로드 (CSV)
+                <button id="btn-download-local" class="tap-effect w-full py-4 bg-[#0A3BB8] text-white font-bold rounded-2xl text-lg shadow-lg">
+                    내 기록 다운로드 (CSV)
                 </button>
                 <button id="btn-restart" class="tap-effect w-full py-4 bg-[#1f1f1f] text-white font-bold rounded-2xl text-lg border border-gray-700">
                     다시 하기
@@ -192,13 +192,56 @@
         </div>
     </div>
 
+    <!-- 6. 관리자 전용 화면 -->
+    <div id="screen-admin" class="screen p-6">
+        <div class="flex flex-col w-full h-full max-w-5xl mx-auto pt-10 pb-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">데이터베이스 관리자</h2>
+                    <p class="text-sm text-gray-400 mt-1">Supabase 실시간 데이터</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btn-admin-refresh" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-semibold transition-colors">새로고침</button>
+                    <button id="btn-admin-close" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-semibold transition-colors">닫기</button>
+                </div>
+            </div>
+
+            <!-- 데이터 테이블 -->
+            <div class="flex-1 overflow-auto admin-table-container bg-[#1f1f1f] rounded-xl border border-gray-700 shadow-xl relative">
+                <table class="w-full text-left text-[13px] text-gray-300 whitespace-nowrap">
+                    <thead class="bg-gray-800 text-gray-400 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="p-3 font-semibold">참가자(expNum)</th>
+                            <th class="p-3 font-semibold">Trial</th>
+                            <th class="p-3 font-semibold">알림 발송자</th>
+                            <th class="p-3 font-semibold">반응시간(ms)</th>
+                            <th class="p-3 font-semibold">정답여부</th>
+                            <th class="p-3 font-semibold">저장시간</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body" class="divide-y divide-gray-800">
+                        <tr><td colspan="6" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+                <span id="admin-total-count" class="text-sm text-gray-400">총 데이터: 0 건</span>
+                <button id="btn-admin-download-all" class="px-5 py-3 bg-[#4B7DD1] text-white rounded-xl text-sm font-bold shadow-lg tap-effect">
+                    ⬇ 전체 데이터 CSV 백업
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ================= Supabase DB 연결 =================
+        // ==========================================
+        // 1. 데이터베이스 및 변수 설정
+        // ==========================================
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ================= 설정 및 데이터 =================
         const CONFIG = {
             totalTrials: 20,             
             fixationTime: 600,           
@@ -206,14 +249,6 @@
             notiDuration: 4000           
         };
 
-        const COLORS = [
-            { id: 'red', name: '빨강', hex: '#A2201C' },
-            { id: 'blue', name: '파랑', hex: '#0A3BB8' },
-            { id: 'green', name: '초록', hex: '#187A1E' },
-            { id: 'yellow', name: '노랑', hex: '#976214' }
-        ];
-
-        // 인스타그램 로고 SVG 및 그라데이션 완벽 반영
         const ICONS = {
             instagram: `<div class="absolute inset-0" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"></div>
                         <svg class="relative z-10 w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -225,33 +260,117 @@
                         <svg class="relative z-10 w-[16px] h-[16px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
-        const NOTIFICATIONS = [
-            { iconHtml: ICONS.instagram, title: 'User_o4o6:', msg: '지훈 ㅋㅋㅋㅋㅋㅋㅋㅋ' },
-            { iconHtml: ICONS.kakaotalk, title: '경상국립대학교', msg: '사진을 보냈습니다.' }
-        ];
-
         let currentTrial = 0;
-        let participantId = "";
         let trialData = [];
-        let currentTargetColorId = "";
-        let currentTargetWord = "";
         let trialStartTime = 0;
+        
         let isNotiVisible = false;
         let notiTimeout = null;
+        let activeNotiType = "None";   
+        let activeNotiSender = "None"; 
+
+        let expNum = "";
+        let loverName = "";
+        let adName = "";
+        let dynamicNotifications = []; 
+
+        let currentEquation = "";
+        let currentCorrectAnswer = 0;
+
+        let adminDataDump = [];
 
         const screens = {
             intro: document.getElementById('screen-intro'),
             fixation: document.getElementById('screen-fixation'),
             task: document.getElementById('screen-task'),
-            result: document.getElementById('screen-result')
+            result: document.getElementById('screen-result'),
+            admin: document.getElementById('screen-admin')
         };
-        const targetWordEl = document.getElementById('target-word');
-        const trialCounterEl = document.getElementById('trial-counter');
-        const progressBarEl = document.getElementById('progress-bar');
         const notiEl = document.getElementById('notification');
+        const ansBtns = [
+            document.getElementById('ans-btn-0'), document.getElementById('ans-btn-1'),
+            document.getElementById('ans-btn-2'), document.getElementById('ans-btn-3')
+        ];
 
         document.getElementById('total-trials').textContent = CONFIG.totalTrials;
 
+        // ==========================================
+        // 2. 관리자 기능 (Admin)
+        // ==========================================
+        async function openAdminDashboard() {
+            showScreen('admin');
+            fetchAdminData();
+        }
+
+        async function fetchAdminData() {
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</td></tr>';
+            
+            if (db) {
+                const { data, error } = await db.from('Trials').select('*').order('created_at', { ascending: false });
+                
+                if (error) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-red-500">데이터 호출 실패: ${error.message}</td></tr>`;
+                    return;
+                }
+
+                adminDataDump = data;
+                document.getElementById('admin-total-count').textContent = `총 데이터: ${data.length} 건`;
+
+                if(data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-gray-500">아직 데이터가 없습니다.</td></tr>';
+                } else {
+                    tbody.innerHTML = data.map(row => {
+                        const dateObj = new Date(row.created_at);
+                        const timeString = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+                        
+                        const participantText = row.exp_number || row.participant_id || 'N/A';
+                        const senderText = row.notification_sender || (row.notification_phase === 1 ? '알림발생' : '없음');
+
+                        return `
+                            <tr class="hover:bg-gray-800 transition-colors">
+                                <td class="p-3 border-b border-gray-800 font-bold text-blue-400">${participantText}</td>
+                                <td class="p-3 border-b border-gray-800">${row.trial_number}</td>
+                                <td class="p-3 border-b border-gray-800">${senderText}</td>
+                                <td class="p-3 border-b border-gray-800">${row.reaction_time_ms} ms</td>
+                                <td class="p-3 border-b border-gray-800">${row.is_correct ? '<span class="text-green-500">정답</span>' : '<span class="text-red-500">오답</span>'}</td>
+                                <td class="p-3 border-b border-gray-800 text-gray-500">${timeString}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        document.getElementById('btn-admin-close').addEventListener('click', () => { showScreen('intro'); });
+        document.getElementById('btn-admin-refresh').addEventListener('click', fetchAdminData);
+        
+        document.getElementById('btn-admin-download-all').addEventListener('click', () => {
+            if (adminDataDump.length === 0) return alert("다운로드할 데이터가 없습니다.");
+
+            const headers = ['DB_ID', 'Exp_Num', 'Participant_ID', 'Lover_Name', 'Ad_Name', 'Trial', 'Noti_Type', 'Noti_Sender', 'Noti_Phase', 'Reaction_Time_ms', 'Is_Correct', 'Created_At'];
+            const csvRows = [headers.join(',')];
+
+            adminDataDump.forEach(row => {
+                const values = [
+                    row.id, row.exp_number, row.participant_id, row.lover_name, row.ad_name, 
+                    row.trial_number, row.notification_type, row.notification_sender, row.notification_phase, 
+                    row.reaction_time_ms, row.is_correct, row.created_at
+                ];
+                csvRows.push(values.join(','));
+            });
+
+            const csvContent = "\uFEFF" + csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `All_Database_Backup.csv`;
+            link.click();
+        });
+
+        // ==========================================
+        // 3. 실험 진행 및 산수 로직
+        // ==========================================
         function showScreen(screenName) {
             Object.values(screens).forEach(s => s.classList.remove('active'));
             screens[screenName].classList.add('active');
@@ -259,8 +378,11 @@
 
         function showRandomNotification() {
             if (isNotiVisible) return;
+            const noti = dynamicNotifications[Math.floor(Math.random() * dynamicNotifications.length)];
             
-            const noti = NOTIFICATIONS[Math.floor(Math.random() * NOTIFICATIONS.length)];
+            activeNotiType = noti.type;
+            activeNotiSender = noti.title;
+
             document.getElementById('noti-icon-container').innerHTML = noti.iconHtml;
             document.getElementById('noti-title').textContent = noti.title;
             document.getElementById('noti-msg').textContent = noti.msg;
@@ -269,32 +391,67 @@
             isNotiVisible = true;
 
             if (notiTimeout) clearTimeout(notiTimeout);
-            notiTimeout = setTimeout(() => {
-                hideNotification();
-            }, CONFIG.notiDuration);
+            notiTimeout = setTimeout(() => { hideNotification(); }, CONFIG.notiDuration);
         }
 
         function hideNotification() {
             notiEl.classList.remove('show');
             isNotiVisible = false;
+            activeNotiType = "None";
+            activeNotiSender = "None";
         }
 
-        // 전체화면 전환 로직
-        document.getElementById('btn-fullscreen').addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`전체화면을 지원하지 않는 브라우저입니다: ${err.message}`);
-                });
+        function generateMathProblem() {
+            const isMultiplication = Math.random() > 0.5;
+            let num1, num2, correct;
+
+            if (isMultiplication) {
+                num1 = Math.floor(Math.random() * 8) + 12; 
+                num2 = Math.floor(Math.random() * 6) + 3;  
+                correct = num1 * num2;
+                currentEquation = `${num1} × ${num2}`;
             } else {
-                document.exitFullscreen();
+                num1 = Math.floor(Math.random() * 40) + 11;
+                num2 = Math.floor(Math.random() * 40) + 11;
+                correct = num1 + num2;
+                currentEquation = `${num1} + ${num2}`;
             }
-        });
+
+            currentCorrectAnswer = correct;
+
+            let choices = [correct];
+            while (choices.length < 4) {
+                let offset = Math.floor(Math.random() * 20) - 10;
+                if (offset === 0) offset = 1;
+                let fake = correct + offset;
+                if (fake > 0 && !choices.includes(fake)) choices.push(fake);
+            }
+            choices.sort(() => Math.random() - 0.5);
+            return choices;
+        }
 
         document.getElementById('btn-start').addEventListener('click', () => {
-            participantId = document.getElementById('participant-id').value || `Subj_${Math.floor(Math.random()*10000)}`;
+            expNum = document.getElementById('exp-number').value.trim();
+
+            if (expNum === '1111') {
+                document.getElementById('exp-number').value = '';
+                openAdminDashboard();
+                return;
+            }
+
+            expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
+            loverName = document.getElementById('lover-name').value || `자기야`;
+            adName = document.getElementById('ad-name').value || `무신사`;
+
+            dynamicNotifications = [
+                { type: 'Lover', iconHtml: ICONS.kakaotalk, title: loverName, msg: '오늘 끝나고 뭐해? 보고싶다 ㅠㅠ' },
+                { type: 'Ad', iconHtml: ICONS.kakaotalk, title: adName, msg: '(광고) 고객님을 위한 단 하루 특가 쿠폰이 도착했습니다.' },
+                { type: 'General', iconHtml: ICONS.instagram, title: 'User_o4o6', msg: '지훈 ㅋㅋㅋㅋㅋㅋㅋㅋ' }
+            ];
+
             currentTrial = 0;
             trialData = [];
-            progressBarEl.style.width = '0%';
+            document.getElementById('progress-bar').style.width = '0%';
             hideNotification();
             nextTrial();
         });
@@ -305,53 +462,32 @@
                 return;
             }
             currentTrial++;
-            trialCounterEl.textContent = currentTrial;
-            progressBarEl.style.width = `${(currentTrial / CONFIG.totalTrials) * 100}%`;
+            document.getElementById('trial-counter').textContent = currentTrial;
+            document.getElementById('progress-bar').style.width = `${(currentTrial / CONFIG.totalTrials) * 100}%`;
             
             showScreen('fixation');
-
-            setTimeout(() => {
-                presentStimulus();
-            }, CONFIG.fixationTime);
+            setTimeout(() => { presentStimulus(); }, CONFIG.fixationTime);
         }
 
         function presentStimulus() {
             showScreen('task');
             
-            const wordObj = COLORS[Math.floor(Math.random() * COLORS.length)];
-            let colorObj = COLORS[Math.floor(Math.random() * COLORS.length)];
-            
-            if (Math.random() > 0.3 && wordObj.id === colorObj.id) {
-                const otherColors = COLORS.filter(c => c.id !== wordObj.id);
-                colorObj = otherColors[Math.floor(Math.random() * otherColors.length)];
+            const choices = generateMathProblem();
+            document.getElementById('target-equation').textContent = currentEquation;
+
+            for(let i=0; i<4; i++) {
+                ansBtns[i].textContent = choices[i];
+                ansBtns[i].setAttribute('data-value', choices[i]); 
             }
 
-            currentTargetWord = wordObj.name;
-            currentTargetColorId = colorObj.id;
-            const isCongruent = (wordObj.id === colorObj.id);
-
-            targetWordEl.textContent = currentTargetWord;
-            targetWordEl.style.color = colorObj.hex;
-
-            let notiTriggeredOnThisTrial = false;
             if (!isNotiVisible && Math.random() < CONFIG.notiProbability) {
                 setTimeout(() => { showRandomNotification(); }, 150); 
-                notiTriggeredOnThisTrial = true;
             }
 
             trialStartTime = performance.now();
-
-            trialData[currentTrial - 1] = {
-                participantId: participantId,
-                trialNumber: currentTrial,
-                word: currentTargetWord,
-                color: colorObj.name,
-                condition: isCongruent ? 'Congruent' : 'Incongruent',
-                notificationPresent: (isNotiVisible || notiTriggeredOnThisTrial) ? 'Yes' : 'No'
-            };
         }
 
-        document.querySelectorAll('.color-btn').forEach(btn => {
+        ansBtns.forEach(btn => {
             btn.addEventListener('touchstart', handleInput, {passive: false});
             btn.addEventListener('mousedown', handleInput); 
         });
@@ -361,26 +497,32 @@
             e.preventDefault(); 
 
             const reactionTime = Math.round(performance.now() - trialStartTime);
-            const selectedColorId = e.currentTarget.getAttribute('data-color');
-            const isCorrect = (selectedColorId === currentTargetColorId);
-            
+            const selectedValue = parseInt(e.currentTarget.getAttribute('data-value')); 
+            const isCorrect = (selectedValue === currentCorrectAnswer);
+
+            trialData.push({
+                expNum: expNum, loverName: loverName, adName: adName,
+                trialNumber: currentTrial, equation: currentEquation,
+                correctAnswer: currentCorrectAnswer, chosenAnswer: selectedValue,
+                notificationType: activeNotiType, notificationSender: activeNotiSender,
+                isCorrect: isCorrect ? 1 : 0, reactionTimeMs: reactionTime
+            });
+
             const phaseNum = isNotiVisible ? 1 : 0;
 
-            trialData[currentTrial - 1].responseColorId = selectedColorId;
-            trialData[currentTrial - 1].isCorrect = isCorrect ? 1 : 0;
-            trialData[currentTrial - 1].reactionTimeMs = reactionTime;
-
-            // DB 전송
             if (db) {
-                db.from('Trials').insert([
-                    { 
-                        participant_id: participantId, 
-                        trial_number: currentTrial, 
-                        notification_phase: phaseNum,
-                        reaction_time_ms: reactionTime,
-                        is_correct: isCorrect 
-                    }
-                ]).then(({ error }) => {
+                db.from('Trials').insert([{ 
+                    participant_id: expNum, 
+                    exp_number: expNum,
+                    lover_name: loverName,
+                    ad_name: adName,
+                    notification_type: activeNotiType,
+                    notification_sender: activeNotiSender,
+                    trial_number: currentTrial, 
+                    notification_phase: phaseNum, 
+                    reaction_time_ms: reactionTime,
+                    is_correct: isCorrect 
+                }]).then(({ error }) => {
                     if (error) console.error('DB 전송 에러:', error);
                 });
             }
@@ -393,45 +535,45 @@
             showScreen('result');
         }
 
+        // ==========================================
+        // 4. 유틸리티 (다운로드 등)
+        // ==========================================
         notiEl.addEventListener('click', () => {
             hideNotification();
             if(notiTimeout) clearTimeout(notiTimeout);
         });
 
-        document.getElementById('btn-download').addEventListener('click', () => {
-            if (trialData.length === 0) return;
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => { console.log(err); });
+            } else {
+                document.exitFullscreen();
+            }
+        });
 
-            const headers = ['Participant_ID', 'Trial', 'Word_Meaning', 'Ink_Color', 'Condition', 'Notification_Active', 'Correct', 'Reaction_Time_ms'];
+        document.getElementById('btn-restart').addEventListener('click', () => { showScreen('intro'); });
+
+        document.getElementById('btn-download-local').addEventListener('click', () => {
+            if (trialData.length === 0) return;
+            const headers = ['Exp_Num', 'Lover_Name', 'Ad_Name', 'Trial', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Type', 'Noti_Sender', 'Correct', 'Reaction_Time_ms'];
             const csvRows = [headers.join(',')];
 
             trialData.forEach(row => {
                 const values = [
-                    row.participantId,
-                    row.trialNumber,
-                    row.word,
-                    row.color,
-                    row.condition,
-                    row.notificationPresent,
-                    row.isCorrect,
-                    row.reactionTimeMs
+                    row.expNum, row.loverName, row.adName, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
+                    row.notificationType, row.notificationSender, row.isCorrect, row.reactionTimeMs
                 ];
                 csvRows.push(values.join(','));
             });
 
             const csvContent = "\uFEFF" + csvRows.join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            
             const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `stroop_data_${participantId}.csv`);
+            link.href = URL.createObjectURL(blob);
+            link.download = `math_task_data_${expNum}.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        });
-
-        document.getElementById('btn-restart').addEventListener('click', () => {
-            showScreen('intro');
         });
     </script>
 </body>
