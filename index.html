@@ -62,7 +62,7 @@
             max-width: 90%;
             background-color: #212121; /* 스크린샷 픽셀 추출 색상 (무광 다크그레이) */
             border-radius: 9999px; 
-            padding: 4px 14px 4px 4px; /* [수정됨] 위아래 패딩을 4px로 줄여 세로폭을 아주 슬림하게 변경 */
+            padding: 4px 14px 4px 4px; /* 위아래 패딩을 4px로 줄여 세로폭을 아주 슬림하게 변경 */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
@@ -109,22 +109,17 @@
 </head>
 <body>
 
-    <!-- 1. 알림 팝업 UI (글자 크기, 간격, 수직 중앙 정렬 완벽 구현) -->
     <div id="notification" class="modern-pill-notification">
-        <!-- [수정됨] 아이콘 컨테이너 크기 축소 28px -> 24px -->
         <div id="noti-icon-container" class="w-[24px] h-[24px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
         <div class="flex items-center flex-1 overflow-hidden whitespace-nowrap pl-2.5 pr-1">
-            <!-- [수정됨] 글자 크기 미세 축소 13.5px -> 13px -->
             <span id="noti-title" class="font-bold text-[13px] text-white tracking-tight flex-shrink-0"></span>
             <span id="noti-msg" class="text-[13px] text-[#9A9A9A] truncate font-normal tracking-tight ml-1.5"></span>
         </div>
-        <!-- [수정됨] 화살표 크기 미세 축소 12px -> 11px -->
         <svg class="w-[11px] h-[11px] text-[#6B6B6B] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 9l6 6 6-6"></path>
         </svg>
     </div>
 
-    <!-- 2. 시작 화면 (질문 문구 및 레이아웃 고도화) -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
             <h1 class="text-3xl font-bold mb-3 text-white">실험 검사</h1>
@@ -133,7 +128,6 @@
                 하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
             </p>
             
-            <!-- 정보 입력 섹션 -->
             <div class="w-full bg-[#121212] p-5 rounded-2xl mb-8 border border-gray-800 shadow-lg">
                 <p class="text-center mb-5">
                     <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 실험용으로만 쓰이며 즉시 파기됩니다.)</span>
@@ -145,11 +139,15 @@
                         <input type="text" id="exp-number" class="custom-input py-3.5" placeholder="예: 1000">
                     </div>
                     <div>
-                        <label for="lover-name" class="block text-[12.5px] font-medium text-gray-500 mb-1.5 ml-1">2. 가장 자주 DM을 하는 지인/애인</label>
+                        <label for="my-id" class="block text-[12.5px] font-medium text-gray-500 mb-1.5 ml-1">2. 본인 인스타 계정</label>
+                        <input type="text" id="my-id" class="custom-input py-3.5" placeholder="예: user_123">
+                    </div>
+                    <div>
+                        <label for="lover-name" class="block text-[12.5px] font-medium text-gray-500 mb-1.5 ml-1">3. 가장 자주 DM을 하는 지인/애인</label>
                         <input type="text" id="lover-name" class="custom-input py-3.5" placeholder="예: @my_dear, 우리공주">
                     </div>
                     <div>
-                        <label for="ad-name" class="block text-[12.5px] font-medium text-gray-500 mb-1.5 ml-1">3. 평소 자주 보는 브랜드/쇼핑몰</label>
+                        <label for="ad-name" class="block text-[12.5px] font-medium text-gray-500 mb-1.5 ml-1">4. 평소 자주 보는 브랜드/쇼핑몰</label>
                         <input type="text" id="ad-name" class="custom-input py-3.5" placeholder="예: @musinsa, 올리브영">
                     </div>
                 </div>
@@ -164,12 +162,10 @@
         </div>
     </div>
 
-    <!-- 3. 대기 화면 -->
     <div id="screen-fixation" class="screen justify-center items-center">
         <div class="text-5xl text-gray-600 font-light">+</div>
     </div>
 
-    <!-- 4. 본 실험 화면 (산수 과제) -->
     <div id="screen-task" class="screen">
         <div class="pt-12 px-6 flex justify-between items-center z-10">
             <div class="w-full bg-[#2a2a2a] rounded-full h-1.5">
@@ -190,7 +186,6 @@
         </div>
     </div>
 
-    <!-- 5. 결과 화면 -->
     <div id="screen-result" class="screen p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
             <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">✓</div>
@@ -208,7 +203,6 @@
         </div>
     </div>
 
-    <!-- 6. 관리자 전용 화면 -->
     <div id="screen-admin" class="screen p-6">
         <div class="flex flex-col w-full h-full max-w-5xl mx-auto pt-10 pb-6">
             <div class="flex justify-between items-center mb-6">
@@ -226,7 +220,8 @@
                 <table class="w-full text-left text-[13px] text-gray-300 whitespace-nowrap">
                     <thead class="bg-gray-800 text-gray-400 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="p-3 font-semibold">참가자(expNum)</th>
+                            <th class="p-3 font-semibold">본인계정(ID)</th>
+                            <th class="p-3 font-semibold">실험번호(expNum)</th>
                             <th class="p-3 font-semibold">Trial</th>
                             <th class="p-3 font-semibold">알림 발송자</th>
                             <th class="p-3 font-semibold">반응시간(ms)</th>
@@ -235,7 +230,7 @@
                         </tr>
                     </thead>
                     <tbody id="admin-table-body" class="divide-y divide-gray-800">
-                        <tr><td colspan="6" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</td></tr>
+                        <tr><td colspan="7" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -263,10 +258,8 @@
             notiDuration: 4000           
         };
 
-        // 인스타그램 아이콘 그라데이션 및 로고 굵기 정밀 조정
         const ICONS = {
             instagram: `<div class="absolute inset-0 rounded-full" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"></div>
-                        <!-- [수정됨] 내부 svg 카메라 아이콘 크기 축소 16px -> 14px -->
                         <svg class="relative z-10 w-[14px] h-[14px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -287,7 +280,6 @@
             { eq: "52 + 19", ans: 71, choices: [81, 71, 61, 72], noti: "None" },
             { eq: "17 × 5",  ans: 85, choices: [75, 95, 85, 86], noti: "None" },
             { eq: "28 + 35", ans: 63, choices: [63, 53, 73, 64], noti: "None" },
-            // 10번 문제
             { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "Target" },
             { eq: "41 + 22", ans: 63, choices: [53, 73, 63, 65], noti: "None" },
             { eq: "16 × 4",  ans: 64, choices: [64, 54, 74, 66], noti: "None" },
@@ -297,7 +289,6 @@
             { eq: "12 × 7",  ans: 84, choices: [94, 74, 84, 86], noti: "None" },
             { eq: "29 + 44", ans: 73, choices: [73, 63, 83, 75], noti: "None" },
             { eq: "23 × 5",  ans: 115, choices: [105, 125, 115, 117], noti: "None" },
-            // 19번 문제
             { eq: "48 + 33", ans: 81, choices: [91, 81, 71, 83], noti: "Target" },
             { eq: "19 × 6",  ans: 114, choices: [114, 104, 124, 116], noti: "None" }
         ];
@@ -312,6 +303,7 @@
         let activeNotiSender = "None"; 
 
         let expNum = "";
+        let myId = ""; // 추가됨: 본인 인스타 계정
         let loverName = "";
         let adName = "";
         let dynamicNotifications = {}; 
@@ -344,13 +336,13 @@
 
         async function fetchAdminData() {
             const tbody = document.getElementById('admin-table-body');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</td></tr>';
             
             if (db) {
                 const { data, error } = await db.from('Trials').select('*').order('created_at', { ascending: false });
                 
                 if (error) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-red-500">데이터 호출 실패: ${error.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-red-500">데이터 호출 실패: ${error.message}</td></tr>`;
                     return;
                 }
 
@@ -358,18 +350,20 @@
                 document.getElementById('admin-total-count').textContent = `총 데이터: ${data.length} 건`;
 
                 if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-gray-500">아직 데이터가 없습니다.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-500">아직 데이터가 없습니다.</td></tr>';
                 } else {
                     tbody.innerHTML = data.map(row => {
                         const dateObj = new Date(row.created_at);
                         const timeString = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
                         
-                        const participantText = row.exp_number || row.participant_id || 'N/A';
+                        const myIdText = row.participant_id || 'N/A';
+                        const expNumText = row.exp_number || 'N/A';
                         const senderText = row.notification_sender || (row.notification_phase === 1 ? '알림발생' : '없음');
 
                         return `
                             <tr class="hover:bg-gray-800 transition-colors">
-                                <td class="p-3 border-b border-gray-800 font-bold text-blue-400">${participantText}</td>
+                                <td class="p-3 border-b border-gray-800 font-bold text-green-400">${myIdText}</td>
+                                <td class="p-3 border-b border-gray-800 font-bold text-blue-400">${expNumText}</td>
                                 <td class="p-3 border-b border-gray-800">${row.trial_number}</td>
                                 <td class="p-3 border-b border-gray-800">${senderText}</td>
                                 <td class="p-3 border-b border-gray-800">${row.reaction_time_ms} ms</td>
@@ -388,12 +382,12 @@
         document.getElementById('btn-admin-download-all').addEventListener('click', () => {
             if (adminDataDump.length === 0) return alert("다운로드할 데이터가 없습니다.");
 
-            const headers = ['DB_ID', 'Exp_Num', 'Participant_ID', 'Lover_Name', 'Ad_Name', 'Trial', 'Noti_Type', 'Noti_Sender', 'Noti_Phase', 'Reaction_Time_ms', 'Is_Correct', 'Created_At'];
+            const headers = ['DB_ID', 'My_ID', 'Exp_Num', 'Lover_Name', 'Ad_Name', 'Trial', 'Noti_Type', 'Noti_Sender', 'Noti_Phase', 'Reaction_Time_ms', 'Is_Correct', 'Created_At'];
             const csvRows = [headers.join(',')];
 
             adminDataDump.forEach(row => {
                 const values = [
-                    row.id, row.exp_number, row.participant_id, row.lover_name, row.ad_name, 
+                    row.id, row.participant_id, row.exp_number, row.lover_name, row.ad_name, 
                     row.trial_number, row.notification_type, row.notification_sender, row.notification_phase, 
                     row.reaction_time_ms, row.is_correct, row.created_at
                 ];
@@ -452,10 +446,11 @@
             }
 
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
-            loverName = document.getElementById('lover-name').value || `mini_o4o6`;
-            adName = document.getElementById('ad-name').value || `musinsa_official`;
+            // [수정됨] 내 개인 아이디 fallback을 모두 user_123으로 변경
+            myId = document.getElementById('my-id').value.trim() || `user_123`;
+            loverName = document.getElementById('lover-name').value.trim() || `user_123`;
+            adName = document.getElementById('ad-name').value.trim() || `musinsa_official`;
 
-            // 모든 알림을 인스타그램 다이렉트 메시지(DM) 스타일로 통일
             dynamicNotifications = {
                 'Lover': { type: 'Lover', iconHtml: ICONS.instagram, title: loverName, msg: '머해?' },
                 'Ad': { type: 'Ad', iconHtml: ICONS.instagram, title: adName, msg: '회원님을 위한 단 하루 특가 쿠폰이 도착했습니다.' },
@@ -503,8 +498,6 @@
                     let numMatched = expNum.match(/\d+/);
                     let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
                     
-                    // 실험번호 짝수 = 애인 알림 / 홀수 = 인스타 알림(테스트용)
-                    // (원하신다면 홀수일 때 'Ad'로 바꾸셔도 됩니다)
                     notiType = (num % 2 === 0) ? "Lover" : "General"; 
                 }
 
@@ -530,7 +523,7 @@
             const isCorrect = (selectedValue === currentCorrectAnswer);
 
             trialData.push({
-                expNum: expNum, loverName: loverName, adName: adName,
+                expNum: expNum, myId: myId, loverName: loverName, adName: adName,
                 trialNumber: currentTrial, equation: currentEquation,
                 correctAnswer: currentCorrectAnswer, chosenAnswer: selectedValue,
                 notificationType: activeNotiType, notificationSender: activeNotiSender,
@@ -541,7 +534,7 @@
 
             if (db) {
                 db.from('Trials').insert([{ 
-                    participant_id: expNum, 
+                    participant_id: myId,  // 본인 아이디를 participant_id 열에 저장
                     exp_number: expNum,
                     lover_name: loverName,
                     ad_name: adName,
@@ -584,12 +577,12 @@
 
         document.getElementById('btn-download-local').addEventListener('click', () => {
             if (trialData.length === 0) return;
-            const headers = ['Exp_Num', 'Lover_Name', 'Ad_Name', 'Trial', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Type', 'Noti_Sender', 'Correct', 'Reaction_Time_ms'];
+            const headers = ['Exp_Num', 'My_ID', 'Lover_Name', 'Ad_Name', 'Trial', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Type', 'Noti_Sender', 'Correct', 'Reaction_Time_ms'];
             const csvRows = [headers.join(',')];
 
             trialData.forEach(row => {
                 const values = [
-                    row.expNum, row.loverName, row.adName, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
+                    row.expNum, row.myId, row.loverName, row.adName, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
                     row.notificationType, row.notificationSender, row.isCorrect, row.reactionTimeMs
                 ];
                 csvRows.push(values.join(','));
