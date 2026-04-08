@@ -104,7 +104,6 @@
         }
         .custom-input::placeholder { color: #6b7280; }
 
-        /* 관리자 테이블 스크롤바 커스텀 */
         .admin-table-container::-webkit-scrollbar { width: 6px; height: 6px; }
         .admin-table-container::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
         .admin-table-container::-webkit-scrollbar-track { background: #1f1f1f; }
@@ -245,7 +244,6 @@
         const CONFIG = {
             totalTrials: 20,             
             fixationTime: 600,           
-            notiProbability: 0.25,       
             notiDuration: 4000           
         };
 
@@ -260,6 +258,34 @@
                         <svg class="relative z-10 w-[16px] h-[16px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
+        // ------------------------------------------
+        // [핵심] 완벽히 통제된 20개 시나리오 세팅 (1안)
+        // ------------------------------------------
+        const TRIAL_SCENARIO = [
+            { eq: "15 + 23", ans: 38, choices: [48, 38, 27, 39], noti: "None" },
+            { eq: "14 × 3",  ans: 42, choices: [42, 32, 52, 45], noti: "None" },
+            { eq: "34 + 18", ans: 52, choices: [42, 62, 52, 53], noti: "None" },
+            { eq: "21 × 4",  ans: 84, choices: [74, 84, 94, 85], noti: "None" },
+            { eq: "45 + 27", ans: 72, choices: [62, 73, 82, 72], noti: "None" },
+            { eq: "13 × 6",  ans: 78, choices: [78, 68, 88, 79], noti: "None" },
+            { eq: "52 + 19", ans: 71, choices: [81, 71, 61, 72], noti: "None" },
+            { eq: "17 × 5",  ans: 85, choices: [75, 95, 85, 86], noti: "None" },
+            { eq: "28 + 35", ans: 63, choices: [63, 53, 73, 64], noti: "None" },
+            // 10번 문제: 실험번호에 따라 타겟 알림 발생
+            { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "Target" },
+            { eq: "41 + 22", ans: 63, choices: [53, 73, 63, 65], noti: "None" },
+            { eq: "16 × 4",  ans: 64, choices: [64, 54, 74, 66], noti: "None" },
+            { eq: "37 + 16", ans: 53, choices: [63, 43, 54, 53], noti: "None" },
+            { eq: "18 × 3",  ans: 54, choices: [54, 64, 44, 56], noti: "None" },
+            { eq: "56 + 25", ans: 81, choices: [71, 81, 91, 83], noti: "None" },
+            { eq: "12 × 7",  ans: 84, choices: [94, 74, 84, 86], noti: "None" },
+            { eq: "29 + 44", ans: 73, choices: [73, 63, 83, 75], noti: "None" },
+            { eq: "23 × 5",  ans: 115, choices: [105, 125, 115, 117], noti: "None" },
+            // 19번 문제: 실험번호에 따라 타겟 알림 발생
+            { eq: "48 + 33", ans: 81, choices: [91, 81, 71, 83], noti: "Target" },
+            { eq: "19 × 6",  ans: 114, choices: [114, 104, 124, 116], noti: "None" }
+        ];
+
         let currentTrial = 0;
         let trialData = [];
         let trialStartTime = 0;
@@ -272,7 +298,7 @@
         let expNum = "";
         let loverName = "";
         let adName = "";
-        let dynamicNotifications = []; 
+        let dynamicNotifications = {}; 
 
         let currentEquation = "";
         let currentCorrectAnswer = 0;
@@ -291,8 +317,6 @@
             document.getElementById('ans-btn-0'), document.getElementById('ans-btn-1'),
             document.getElementById('ans-btn-2'), document.getElementById('ans-btn-3')
         ];
-
-        document.getElementById('total-trials').textContent = CONFIG.totalTrials;
 
         // ==========================================
         // 2. 관리자 기능 (Admin)
@@ -376,9 +400,11 @@
             screens[screenName].classList.add('active');
         }
 
-        function showRandomNotification() {
-            if (isNotiVisible) return;
-            const noti = dynamicNotifications[Math.floor(Math.random() * dynamicNotifications.length)];
+        // 고정된 타입으로 알림을 호출하는 함수
+        function showSpecificNotification(type) {
+            if (isNotiVisible || type === "None" || !dynamicNotifications[type]) return;
+            
+            const noti = dynamicNotifications[type];
             
             activeNotiType = noti.type;
             activeNotiSender = noti.title;
@@ -401,35 +427,6 @@
             activeNotiSender = "None";
         }
 
-        function generateMathProblem() {
-            const isMultiplication = Math.random() > 0.5;
-            let num1, num2, correct;
-
-            if (isMultiplication) {
-                num1 = Math.floor(Math.random() * 8) + 12; 
-                num2 = Math.floor(Math.random() * 6) + 3;  
-                correct = num1 * num2;
-                currentEquation = `${num1} × ${num2}`;
-            } else {
-                num1 = Math.floor(Math.random() * 40) + 11;
-                num2 = Math.floor(Math.random() * 40) + 11;
-                correct = num1 + num2;
-                currentEquation = `${num1} + ${num2}`;
-            }
-
-            currentCorrectAnswer = correct;
-
-            let choices = [correct];
-            while (choices.length < 4) {
-                let offset = Math.floor(Math.random() * 20) - 10;
-                if (offset === 0) offset = 1;
-                let fake = correct + offset;
-                if (fake > 0 && !choices.includes(fake)) choices.push(fake);
-            }
-            choices.sort(() => Math.random() - 0.5);
-            return choices;
-        }
-
         document.getElementById('btn-start').addEventListener('click', () => {
             expNum = document.getElementById('exp-number').value.trim();
 
@@ -443,11 +440,11 @@
             loverName = document.getElementById('lover-name').value || `자기야`;
             adName = document.getElementById('ad-name').value || `무신사`;
 
-            dynamicNotifications = [
-                { type: 'Lover', iconHtml: ICONS.kakaotalk, title: loverName, msg: '오늘 끝나고 뭐해? 보고싶다 ㅠㅠ' },
-                { type: 'Ad', iconHtml: ICONS.kakaotalk, title: adName, msg: '(광고) 고객님을 위한 단 하루 특가 쿠폰이 도착했습니다.' },
-                { type: 'General', iconHtml: ICONS.instagram, title: 'User_o4o6', msg: '지훈 ㅋㅋㅋㅋㅋㅋㅋㅋ' }
-            ];
+            // 호출하기 쉽게 딕셔너리 형태로 저장
+            dynamicNotifications = {
+                'Lover': { type: 'Lover', iconHtml: ICONS.kakaotalk, title: loverName, msg: '오늘 끝나고 뭐해? 보고싶다 ㅠㅠ' },
+                'Ad': { type: 'Ad', iconHtml: ICONS.kakaotalk, title: adName, msg: '(광고) 고객님을 위한 단 하루 특가 쿠폰이 도착했습니다.' }
+            };
 
             currentTrial = 0;
             trialData = [];
@@ -472,16 +469,33 @@
         function presentStimulus() {
             showScreen('task');
             
-            const choices = generateMathProblem();
+            // 시나리오에서 현재 문제 세팅을 100% 동일하게 가져옴
+            const currentTrialData = TRIAL_SCENARIO[currentTrial - 1];
+            currentEquation = currentTrialData.eq;
+            currentCorrectAnswer = currentTrialData.ans;
+
             document.getElementById('target-equation').textContent = currentEquation;
 
+            // 버튼 위치와 오답도 100% 고정
             for(let i=0; i<4; i++) {
-                ansBtns[i].textContent = choices[i];
-                ansBtns[i].setAttribute('data-value', choices[i]); 
+                ansBtns[i].textContent = currentTrialData.choices[i];
+                ansBtns[i].setAttribute('data-value', currentTrialData.choices[i]); 
             }
 
-            if (!isNotiVisible && Math.random() < CONFIG.notiProbability) {
-                setTimeout(() => { showRandomNotification(); }, 150); 
+            // 시나리오에 알림이 예약되어 있다면, 정확히 0.5초(500ms) 뒤에 알림 발생
+            if (currentTrialData.noti !== "None") {
+                let notiType = currentTrialData.noti;
+                
+                // [NEW] 그룹 배정 로직: 실험번호에서 숫자를 추출하여 짝수=애인(Lover), 홀수=광고(Ad)
+                if (notiType === "Target") {
+                    let numMatched = expNum.match(/\d+/);
+                    let num = numMatched ? parseInt(numMatched[0], 10) : 1; // 숫자가 없으면 기본값 1(홀수)로 처리
+                    notiType = (num % 2 === 0) ? "Lover" : "Ad";
+                }
+
+                setTimeout(() => { 
+                    showSpecificNotification(notiType); 
+                }, 500); 
             }
 
             trialStartTime = performance.now();
