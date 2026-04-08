@@ -227,10 +227,10 @@
                 <table class="w-full text-left text-[13px] text-gray-300 whitespace-nowrap">
                     <thead class="bg-gray-800 text-gray-400 sticky top-0 z-10 shadow-sm">
                         <tr>
-                            <th class="p-3 font-semibold">본인계정(ID)</th>
                             <th class="p-3 font-semibold">실험번호(expNum)</th>
+                            <th class="p-3 font-semibold">알림 유형</th>
                             <th class="p-3 font-semibold">Trial</th>
-                            <th class="p-3 font-semibold">알림 발송자</th>
+                            <th class="p-3 font-semibold">알림 발생</th>
                             <th class="p-3 font-semibold">반응시간(ms)</th>
                             <th class="p-3 font-semibold">정답여부</th>
                             <th class="p-3 font-semibold">저장시간</th>
@@ -363,16 +363,23 @@
                         const dateObj = new Date(row.created_at);
                         const timeString = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
                         
-                        const myIdText = row.participant_id || 'N/A';
                         const expNumText = row.exp_number || 'N/A';
-                        const senderText = row.notification_sender || (row.notification_phase === 1 ? '알림발생' : '없음');
+                        
+                        // 실험번호(숫자)를 추출하여 이 참가자가 속한 그룹(알림 유형)을 모든 행에 강제 표시
+                        let numMatched = expNumText.match(/\d+/);
+                        let num = numMatched ? parseInt(numMatched[0], 10) : 1;
+                        let groupType = (num % 2 === 0) ? '관계성' : '광고성';
+                        let groupColor = (groupType === '관계성') ? 'text-pink-400' : 'text-yellow-400';
+                        
+                        // 해당 Trial에 알림이 화면에 떴는지 여부 (O / X)
+                        let notiFired = (row.notification_phase === 1) ? '<span class="text-white font-bold">O</span>' : '<span class="text-gray-600">X</span>';
 
                         return `
                             <tr class="hover:bg-gray-800 transition-colors">
-                                <td class="p-3 border-b border-gray-800 font-bold text-green-400">${myIdText}</td>
                                 <td class="p-3 border-b border-gray-800 font-bold text-blue-400">${expNumText}</td>
+                                <td class="p-3 border-b border-gray-800 font-bold ${groupColor}">${groupType}</td>
                                 <td class="p-3 border-b border-gray-800">${row.trial_number}</td>
-                                <td class="p-3 border-b border-gray-800">${senderText}</td>
+                                <td class="p-3 border-b border-gray-800">${notiFired}</td>
                                 <td class="p-3 border-b border-gray-800">${row.reaction_time_ms} ms</td>
                                 <td class="p-3 border-b border-gray-800">${row.is_correct ? '<span class="text-green-500">정답</span>' : '<span class="text-red-500">오답</span>'}</td>
                                 <td class="p-3 border-b border-gray-800 text-gray-500">${timeString}</td>
@@ -389,13 +396,17 @@
         document.getElementById('btn-admin-download-all').addEventListener('click', () => {
             if (adminDataDump.length === 0) return alert("다운로드할 데이터가 없습니다.");
 
-            const headers = ['DB_ID', 'My_ID', 'Exp_Num', 'Lover_Name', 'Ad_Name', 'Trial', 'Noti_Type', 'Noti_Sender', 'Noti_Phase', 'Reaction_Time_ms', 'Is_Correct', 'Created_At'];
+            const headers = ['Exp_Num', 'Group_Type', 'Trial', 'Noti_Fired', 'Reaction_Time_ms', 'Is_Correct', 'Created_At'];
             const csvRows = [headers.join(',')];
 
             adminDataDump.forEach(row => {
+                let numMatched = row.exp_number ? row.exp_number.match(/\d+/) : null;
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1;
+                let groupType = (num % 2 === 0) ? '관계성' : '광고성';
+                let notiFired = (row.notification_phase === 1) ? 'O' : 'X';
+
                 const values = [
-                    row.id, row.participant_id, row.exp_number, row.lover_name, row.ad_name, 
-                    row.trial_number, row.notification_type, row.notification_sender, row.notification_phase, 
+                    row.exp_number, groupType, row.trial_number, notiFired,
                     row.reaction_time_ms, row.is_correct, row.created_at
                 ];
                 csvRows.push(values.join(','));
@@ -610,13 +621,19 @@
 
         document.getElementById('btn-download-local').addEventListener('click', () => {
             if (trialData.length === 0) return;
-            const headers = ['Exp_Num', 'My_ID', 'Lover_Name', 'Ad_Name', 'Trial', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Type', 'Noti_Sender', 'Correct', 'Reaction_Time_ms'];
+            
+            const headers = ['Exp_Num', 'Group_Type', 'Trial', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Fired', 'Correct', 'Reaction_Time_ms'];
             const csvRows = [headers.join(',')];
 
             trialData.forEach(row => {
+                let numMatched = row.expNum.match(/\d+/);
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1;
+                let groupType = (num % 2 === 0) ? '관계성' : '광고성';
+                let notiFired = (row.notificationType !== 'None') ? 'O' : 'X';
+
                 const values = [
-                    row.expNum, row.myId, row.loverName, row.adName, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
-                    row.notificationType, row.notificationSender, row.isCorrect, row.reactionTimeMs
+                    row.expNum, groupType, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
+                    notiFired, row.isCorrect, row.reactionTimeMs
                 ];
                 csvRows.push(values.join(','));
             });
