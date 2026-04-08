@@ -52,28 +52,26 @@
             text-align: center;
         }
 
+        /* 📱 최신 다크모드 알약(Pill) 팝업 정밀 튜닝 (스크린샷 일치화) */
         .modern-pill-notification {
             position: absolute;
             top: 0; 
             left: 50%;
             transform: translate(-50%, -150px);
             width: fit-content;
-            max-width: 92%;
-            background-color: rgba(112, 112, 112, 0.95); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            max-width: 94%;
+            background-color: rgba(42, 42, 42, 0.98); /* 스크린샷과 동일한 진한 다크 그레이 */
             border-radius: 9999px; 
-            padding: 5px 10px 5px 5px; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            padding: 7px 16px 7px 7px; /* 아이콘 쪽은 좁게, 글자 끝은 넓게 */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
             display: flex;
             align-items: center;
-            gap: 8px;
             cursor: pointer;
         }
         .modern-pill-notification.show {
-            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 12px));
+            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 16px));
         }
 
         .tap-effect:active {
@@ -111,15 +109,15 @@
 </head>
 <body>
 
-    <!-- 1. 알림 팝업 UI -->
+    <!-- 1. 알림 팝업 UI (간격, 폰트 사이즈, 색상 정밀 튜닝) -->
     <div id="notification" class="modern-pill-notification">
-        <div id="noti-icon-container" class="w-[28px] h-[28px] rounded-[10px] flex-shrink-0 flex items-center justify-center relative overflow-hidden shadow-sm"></div>
-        <div class="flex items-center gap-1.5 flex-1 overflow-hidden whitespace-nowrap px-1">
-            <span id="noti-title" class="font-bold text-[13.5px] text-white truncate max-w-[120px]"></span>
-            <span id="noti-msg" class="text-[13.5px] text-white truncate opacity-90"></span>
+        <div id="noti-icon-container" class="w-[32px] h-[32px] flex-shrink-0 flex items-center justify-center relative overflow-hidden"></div>
+        <div class="flex items-baseline flex-1 overflow-hidden whitespace-nowrap pl-2.5 pr-1">
+            <span id="noti-title" class="font-bold text-[14.5px] text-white mr-2 tracking-tight"></span>
+            <span id="noti-msg" class="text-[14.5px] text-[#B0B0B0] truncate font-normal tracking-tight"></span>
         </div>
-        <svg class="w-[14px] h-[14px] text-gray-300 ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+        <svg class="w-[14px] h-[14px] text-[#6B6B6B] ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"></path>
         </svg>
     </div>
 
@@ -134,7 +132,7 @@
             
             <div class="w-full mb-8 space-y-3">
                 <input type="text" id="exp-number" class="custom-input" placeholder="실험번호 (예: 1000)">
-                <input type="text" id="lover-name" class="custom-input" placeholder="저장된 애인 애칭 (예: 내사랑)">
+                <input type="text" id="lover-name" class="custom-input" placeholder="저장된 애인 애칭 (예: 자기)">
                 <input type="text" id="ad-name" class="custom-input" placeholder="자주 보는 쇼핑몰/광고 (예: 무신사)">
             </div>
 
@@ -205,7 +203,6 @@
                 </div>
             </div>
 
-            <!-- 데이터 테이블 -->
             <div class="flex-1 overflow-auto admin-table-container bg-[#1f1f1f] rounded-xl border border-gray-700 shadow-xl relative">
                 <table class="w-full text-left text-[13px] text-gray-300 whitespace-nowrap">
                     <thead class="bg-gray-800 text-gray-400 sticky top-0 z-10 shadow-sm">
@@ -247,19 +244,20 @@
             notiDuration: 4000           
         };
 
+        // 아이콘을 스크린샷과 동일하게 둥글게(원형/곡률) 처리
         const ICONS = {
-            instagram: `<div class="absolute inset-0" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"></div>
-                        <svg class="relative z-10 w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            instagram: `<div class="absolute inset-0 rounded-full" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"></div>
+                        <svg class="relative z-10 w-[20px] h-[20px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="3"></line>
                         </svg>`,
-            kakaotalk: `<div class="absolute inset-0 bg-[#FEE500]"></div>
-                        <svg class="relative z-10 w-[16px] h-[16px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
+            kakaotalk: `<div class="absolute inset-0 bg-[#FEE500] rounded-[11px]"></div>
+                        <svg class="relative z-10 w-[18px] h-[18px] text-[#3A1D1D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-5.523 0-10 3.582-10 8 0 2.864 1.838 5.373 4.605 6.825l-1.127 4.195 4.832-3.17c1.1.282 2.277.45 3.69.45 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/></svg>`
         };
 
         // ------------------------------------------
-        // [핵심] 완벽히 통제된 20개 시나리오 세팅 (1안)
+        // [핵심] 완벽히 통제된 20개 시나리오 세팅
         // ------------------------------------------
         const TRIAL_SCENARIO = [
             { eq: "15 + 23", ans: 38, choices: [48, 38, 27, 39], noti: "None" },
@@ -271,7 +269,7 @@
             { eq: "52 + 19", ans: 71, choices: [81, 71, 61, 72], noti: "None" },
             { eq: "17 × 5",  ans: 85, choices: [75, 95, 85, 86], noti: "None" },
             { eq: "28 + 35", ans: 63, choices: [63, 53, 73, 64], noti: "None" },
-            // 10번 문제: 실험번호에 따라 타겟 알림 발생
+            // 10번 문제
             { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "Target" },
             { eq: "41 + 22", ans: 63, choices: [53, 73, 63, 65], noti: "None" },
             { eq: "16 × 4",  ans: 64, choices: [64, 54, 74, 66], noti: "None" },
@@ -281,7 +279,7 @@
             { eq: "12 × 7",  ans: 84, choices: [94, 74, 84, 86], noti: "None" },
             { eq: "29 + 44", ans: 73, choices: [73, 63, 83, 75], noti: "None" },
             { eq: "23 × 5",  ans: 115, choices: [105, 125, 115, 117], noti: "None" },
-            // 19번 문제: 실험번호에 따라 타겟 알림 발생
+            // 19번 문제
             { eq: "48 + 33", ans: 81, choices: [91, 81, 71, 83], noti: "Target" },
             { eq: "19 × 6",  ans: 114, choices: [114, 104, 124, 116], noti: "None" }
         ];
@@ -400,7 +398,6 @@
             screens[screenName].classList.add('active');
         }
 
-        // 고정된 타입으로 알림을 호출하는 함수
         function showSpecificNotification(type) {
             if (isNotiVisible || type === "None" || !dynamicNotifications[type]) return;
             
@@ -437,13 +434,13 @@
             }
 
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
-            loverName = document.getElementById('lover-name').value || `자기야`;
+            loverName = document.getElementById('lover-name').value || `자기`;
             adName = document.getElementById('ad-name').value || `무신사`;
 
-            // 호출하기 쉽게 딕셔너리 형태로 저장
             dynamicNotifications = {
                 'Lover': { type: 'Lover', iconHtml: ICONS.kakaotalk, title: loverName, msg: '오늘 끝나고 뭐해? 보고싶다 ㅠㅠ' },
-                'Ad': { type: 'Ad', iconHtml: ICONS.kakaotalk, title: adName, msg: '(광고) 고객님을 위한 단 하루 특가 쿠폰이 도착했습니다.' }
+                'Ad': { type: 'Ad', iconHtml: ICONS.kakaotalk, title: adName, msg: '(광고) 고객님을 위한 단 하루 특가 쿠폰이 도착했습니다.' },
+                'General': { type: 'General', iconHtml: ICONS.instagram, title: '(mini_o4o6) 민기모...', msg: '금욜에 버스 더 일찍 탈듯' }
             };
 
             currentTrial = 0;
@@ -469,28 +466,27 @@
         function presentStimulus() {
             showScreen('task');
             
-            // 시나리오에서 현재 문제 세팅을 100% 동일하게 가져옴
             const currentTrialData = TRIAL_SCENARIO[currentTrial - 1];
             currentEquation = currentTrialData.eq;
             currentCorrectAnswer = currentTrialData.ans;
 
             document.getElementById('target-equation').textContent = currentEquation;
 
-            // 버튼 위치와 오답도 100% 고정
             for(let i=0; i<4; i++) {
                 ansBtns[i].textContent = currentTrialData.choices[i];
                 ansBtns[i].setAttribute('data-value', currentTrialData.choices[i]); 
             }
 
-            // 시나리오에 알림이 예약되어 있다면, 정확히 0.5초(500ms) 뒤에 알림 발생
             if (currentTrialData.noti !== "None") {
                 let notiType = currentTrialData.noti;
                 
-                // [NEW] 그룹 배정 로직: 실험번호에서 숫자를 추출하여 짝수=애인(Lover), 홀수=광고(Ad)
                 if (notiType === "Target") {
                     let numMatched = expNum.match(/\d+/);
-                    let num = numMatched ? parseInt(numMatched[0], 10) : 1; // 숫자가 없으면 기본값 1(홀수)로 처리
-                    notiType = (num % 2 === 0) ? "Lover" : "Ad";
+                    let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
+                    
+                    // 실험번호 짝수 = 애인 알림 / 홀수 = 인스타 알림(테스트용)
+                    // (원하신다면 홀수일 때 'Ad'로 바꾸셔도 됩니다)
+                    notiType = (num % 2 === 0) ? "Lover" : "General"; 
                 }
 
                 setTimeout(() => { 
