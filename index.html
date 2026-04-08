@@ -60,9 +60,9 @@
             transform: translate(-50%, -150px);
             width: fit-content;
             max-width: 92%;
-            background-color: #212121; /* 다시 세련된 블랙/다크그레이로 복구 */
+            background-color: #212121; /* 세련된 블랙/다크그레이 */
             border-radius: 9999px; 
-            padding: 4px 14px 4px 4px; /* 슬림한 핏으로 패딩 복구 */
+            padding: 4px 14px 4px 4px; /* 슬림한 핏으로 패딩 조정 */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
@@ -121,7 +121,7 @@
         </svg>
     </div>
 
-    <!-- 2. 시작 화면 (질문 문구 및 레이아웃 고도화) -->
+    <!-- 2. 시작 화면 -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
             <h1 class="text-3xl font-bold mb-3 text-white">실험 검사</h1>
@@ -287,7 +287,7 @@
             { eq: "52 + 19", ans: 71, choices: [81, 71, 61, 72], noti: "None" },
             { eq: "17 × 5",  ans: 85, choices: [75, 95, 85, 86], noti: "None" },
             { eq: "28 + 35", ans: 63, choices: [63, 53, 73, 64], noti: "None" },
-            { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "Target" },
+            { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "Target" }, // 10번 문제 (알림)
             { eq: "41 + 22", ans: 63, choices: [53, 73, 63, 65], noti: "None" },
             { eq: "16 × 4",  ans: 64, choices: [64, 54, 74, 66], noti: "None" },
             { eq: "37 + 16", ans: 53, choices: [63, 43, 54, 53], noti: "None" },
@@ -296,7 +296,7 @@
             { eq: "12 × 7",  ans: 84, choices: [94, 74, 84, 86], noti: "None" },
             { eq: "29 + 44", ans: 73, choices: [73, 63, 83, 75], noti: "None" },
             { eq: "23 × 5",  ans: 115, choices: [105, 125, 115, 117], noti: "None" },
-            { eq: "48 + 33", ans: 81, choices: [91, 81, 71, 83], noti: "Target" },
+            { eq: "48 + 33", ans: 81, choices: [91, 81, 71, 83], noti: "Target" }, // 19번 문제 (알림)
             { eq: "19 × 6",  ans: 114, choices: [114, 104, 124, 116], noti: "None" }
         ];
 
@@ -365,13 +365,11 @@
                         
                         const expNumText = row.exp_number || 'N/A';
                         
-                        // 실험번호(숫자)를 추출하여 이 참가자가 속한 그룹(알림 유형)을 모든 행에 강제 표시
                         let numMatched = expNumText.match(/\d+/);
                         let num = numMatched ? parseInt(numMatched[0], 10) : 1;
                         let groupType = (num % 2 === 0) ? '관계성' : '광고성';
                         let groupColor = (groupType === '관계성') ? 'text-pink-400' : 'text-yellow-400';
                         
-                        // 해당 Trial에 알림이 화면에 떴는지 여부 (O / X)
                         let notiFired = (row.notification_phase === 1) ? '<span class="text-white font-bold">O</span>' : '<span class="text-gray-600">X</span>';
 
                         return `
@@ -477,7 +475,6 @@
             adName = document.getElementById('ad-name').value.trim() || `musinsa_official`;
 
             dynamicNotifications = {
-                // 이미지와 동일하게 텍스트 조합 수정 (본인아이디: 애인이름 부분을 전체 굵은 글씨로 통합)
                 'Lover': { 
                     type: 'Lover', 
                     sender: loverName, 
@@ -536,14 +533,9 @@
             }
 
             if (currentTrialData.noti !== "None") {
-                let notiType = currentTrialData.noti;
-                
-                if (notiType === "Target") {
-                    let numMatched = expNum.match(/\d+/);
-                    let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
-                    
-                    notiType = (num % 2 === 0) ? "Lover" : "General"; 
-                }
+                let numMatched = expNum.match(/\d+/);
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
+                let notiType = (num % 2 === 0) ? "Lover" : "General"; 
 
                 setTimeout(() => { 
                     showSpecificNotification(notiType); 
@@ -566,15 +558,29 @@
             const selectedValue = parseInt(e.currentTarget.getAttribute('data-value')); 
             const isCorrect = (selectedValue === currentCorrectAnswer);
 
+            // [버그 수정 완료] 반응 시간과 무관하게 10번, 19번 문제는 무조건 알림 발생으로 기록!
+            const currentTrialData = TRIAL_SCENARIO[currentTrial - 1];
+            let loggedNotiType = "None";
+            let loggedNotiSender = "None";
+            let phaseNum = 0; // 0 = 알림 안 뜸 (X), 1 = 알림 뜸 (O)
+
+            if (currentTrialData.noti !== "None") {
+                let numMatched = expNum.match(/\d+/);
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
+                
+                loggedNotiType = (num % 2 === 0) ? "Lover" : "General"; 
+                loggedNotiSender = dynamicNotifications[loggedNotiType] ? dynamicNotifications[loggedNotiType].sender : "None";
+                phaseNum = 1; // 10번, 19번이면 언제 누르든 무조건 O로 강제 기록
+            }
+
             trialData.push({
                 expNum: expNum, myId: myId, loverName: loverName, adName: adName,
                 trialNumber: currentTrial, equation: currentEquation,
                 correctAnswer: currentCorrectAnswer, chosenAnswer: selectedValue,
-                notificationType: activeNotiType, notificationSender: activeNotiSender,
+                notificationType: loggedNotiType, 
+                notificationSender: loggedNotiSender,
                 isCorrect: isCorrect ? 1 : 0, reactionTimeMs: reactionTime
             });
-
-            const phaseNum = isNotiVisible ? 1 : 0;
 
             if (db) {
                 db.from('Trials').insert([{ 
@@ -582,8 +588,8 @@
                     exp_number: expNum,
                     lover_name: loverName,
                     ad_name: adName,
-                    notification_type: activeNotiType,
-                    notification_sender: activeNotiSender,
+                    notification_type: loggedNotiType,
+                    notification_sender: loggedNotiSender,
                     trial_number: currentTrial, 
                     notification_phase: phaseNum, 
                     reaction_time_ms: reactionTime,
