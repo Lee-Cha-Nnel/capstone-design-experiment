@@ -52,17 +52,17 @@
             text-align: center;
         }
 
-        /* 📱 인스타그램 다크모드 99.9% 싱크로율 튜닝 */
+        /* 📱 안드로이드 짙은 회색 알약(Pill) 팝업 정밀 튜닝 (새로운 이미지 기준) */
         .modern-pill-notification {
             position: absolute;
             top: 0; 
             left: 50%;
             transform: translate(-50%, -150px);
             width: fit-content;
-            max-width: 90%;
-            background-color: #212121; /* 스크린샷 픽셀 추출 색상 (무광 다크그레이) */
+            max-width: 92%;
+            background-color: #71706E; /* 새 이미지에서 추출한 짙은 회색(웜그레이) 배경 */
             border-radius: 9999px; 
-            padding: 4px 14px 4px 4px; /* 위아래 패딩을 4px로 줄여 세로폭을 아주 슬림하게 변경 */
+            padding: 6px 16px 6px 6px; /* 얇았던 위아래 여백을 도톰하게(6px) 늘림 */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
@@ -109,17 +109,21 @@
 </head>
 <body>
 
+    <!-- 1. 알림 팝업 UI (글자 크기, 간격, 수직 중앙 정렬 완벽 구현) -->
     <div id="notification" class="modern-pill-notification">
-        <div id="noti-icon-container" class="w-[24px] h-[24px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
-        <div class="flex items-center flex-1 overflow-hidden whitespace-nowrap pl-2.5 pr-1">
-            <span id="noti-title" class="font-bold text-[13px] text-white tracking-tight flex-shrink-0"></span>
-            <span id="noti-msg" class="text-[13px] text-[#9A9A9A] truncate font-normal tracking-tight ml-1.5"></span>
+        <!-- 아이콘 컨테이너 크기를 배너 두께에 맞춰 살짝 키움 (24px -> 28px) -->
+        <div id="noti-icon-container" class="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center relative overflow-hidden rounded-full"></div>
+        <div class="flex items-center flex-1 overflow-hidden whitespace-nowrap pl-2 pr-1">
+            <!-- 텍스트 사이즈를 기존보다 살짝 크게(14px) 조정하여 가독성 및 안드로이드 비율 일치 -->
+            <span id="noti-title" class="font-bold text-[14px] text-white tracking-tight flex-shrink-0"></span>
+            <span id="noti-msg" class="text-[14px] text-[#EBEBEB] truncate font-normal tracking-tight ml-1.5"></span>
         </div>
-        <svg class="w-[11px] h-[11px] text-[#6B6B6B] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-[12px] h-[12px] text-[#D0D0D0] ml-1 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 9l6 6 6-6"></path>
         </svg>
     </div>
 
+    <!-- 2. 시작 화면 (질문 문구 및 레이아웃 고도화) -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
             <h1 class="text-3xl font-bold mb-3 text-white">실험 검사</h1>
@@ -128,6 +132,7 @@
                 하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
             </p>
             
+            <!-- 정보 입력 섹션 -->
             <div class="w-full bg-[#121212] p-5 rounded-2xl mb-8 border border-gray-800 shadow-lg">
                 <p class="text-center mb-5">
                     <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 실험용으로만 쓰이며 즉시 파기됩니다.)</span>
@@ -162,10 +167,12 @@
         </div>
     </div>
 
+    <!-- 3. 대기 화면 -->
     <div id="screen-fixation" class="screen justify-center items-center">
         <div class="text-5xl text-gray-600 font-light">+</div>
     </div>
 
+    <!-- 4. 본 실험 화면 (산수 과제) -->
     <div id="screen-task" class="screen">
         <div class="pt-12 px-6 flex justify-between items-center z-10">
             <div class="w-full bg-[#2a2a2a] rounded-full h-1.5">
@@ -186,6 +193,7 @@
         </div>
     </div>
 
+    <!-- 5. 결과 화면 -->
     <div id="screen-result" class="screen p-6">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
             <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">✓</div>
@@ -203,6 +211,7 @@
         </div>
     </div>
 
+    <!-- 6. 관리자 전용 화면 -->
     <div id="screen-admin" class="screen p-6">
         <div class="flex flex-col w-full h-full max-w-5xl mx-auto pt-10 pb-6">
             <div class="flex justify-between items-center mb-6">
@@ -260,7 +269,8 @@
 
         const ICONS = {
             instagram: `<div class="absolute inset-0 rounded-full" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"></div>
-                        <svg class="relative z-10 w-[14px] h-[14px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- 카메라 아이콘 크기도 배너 두께에 맞게 약간 조정(14px -> 16px) -->
+                        <svg class="relative z-10 w-[16px] h-[16px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="3"></line>
@@ -303,7 +313,7 @@
         let activeNotiSender = "None"; 
 
         let expNum = "";
-        let myId = ""; // 추가됨: 본인 인스타 계정
+        let myId = ""; 
         let loverName = "";
         let adName = "";
         let dynamicNotifications = {}; 
@@ -416,15 +426,14 @@
             const noti = dynamicNotifications[type];
             
             activeNotiType = noti.type;
-            activeNotiSender = noti.sender; // DB 저장을 위해 sender 속성 사용
+            activeNotiSender = noti.sender; 
 
             document.getElementById('noti-icon-container').innerHTML = noti.iconHtml;
-            document.getElementById('noti-title').innerHTML = noti.title; // 텍스트 대신 HTML 렌더링
+            document.getElementById('noti-title').innerHTML = noti.title; 
             
             const msgEl = document.getElementById('noti-msg');
-            msgEl.innerHTML = noti.msg; // 텍스트 대신 HTML 태그 렌더링
+            msgEl.innerHTML = noti.msg; 
             
-            // 타이틀이 비어있을 경우 불필요한 좌측 여백 제거
             if (noti.title === '') {
                 msgEl.classList.remove('ml-1.5');
             } else {
@@ -460,13 +469,13 @@
             adName = document.getElementById('ad-name').value.trim() || `musinsa_official`;
 
             dynamicNotifications = {
-                // [수정됨] 본인 아이디(일반) + 애인 아이디(굵게) + 메시지 텍스트 조합
+                // 이미지와 동일하게 텍스트 조합 수정 (본인아이디: 애인이름 부분을 전체 굵은 글씨로 통합)
                 'Lover': { 
                     type: 'Lover', 
                     sender: loverName, 
                     iconHtml: ICONS.instagram, 
                     title: '', 
-                    msg: `<span class="font-bold text-white">${myId}:</span> <span class="font-bold text-white">${loverName}</span> 머하고 있어?` 
+                    msg: `<span class="font-bold text-white">${myId}: ${loverName}</span> 머하고 잇어?` 
                 },
                 'Ad': { 
                     type: 'Ad', 
@@ -561,7 +570,7 @@
 
             if (db) {
                 db.from('Trials').insert([{ 
-                    participant_id: myId,  // 본인 아이디를 participant_id 열에 저장
+                    participant_id: myId,  
                     exp_number: expNum,
                     lover_name: loverName,
                     ad_name: adName,
