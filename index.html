@@ -229,7 +229,7 @@
                         <tr>
                             <th class="p-3 font-semibold">실험번호(expNum)</th>
                             <th class="p-3 font-semibold">알림 유형</th>
-                            <th class="p-3 font-semibold">Trial</th>
+                            <th class="p-3 font-semibold">Question</th> <!-- 변경됨 -->
                             <th class="p-3 font-semibold">알림 발생</th>
                             <th class="p-3 font-semibold">반응시간(ms)</th>
                             <th class="p-3 font-semibold">정답여부</th>
@@ -394,7 +394,7 @@
         document.getElementById('btn-admin-download-all').addEventListener('click', () => {
             if (adminDataDump.length === 0) return alert("다운로드할 데이터가 없습니다.");
 
-            const headers = ['Exp_Num', 'Group_Type', 'Trial', 'Noti_Fired', 'Reaction_Time_ms', 'Is_Correct', 'Created_At'];
+            const headers = ['Exp_Num', 'Group_Type', 'Question', 'Noti_Fired', 'Reaction_Time_ms', 'Is_Correct', 'Created_At']; // 변경됨
             const csvRows = [headers.join(',')];
 
             adminDataDump.forEach(row => {
