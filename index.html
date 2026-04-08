@@ -416,11 +416,20 @@
             const noti = dynamicNotifications[type];
             
             activeNotiType = noti.type;
-            activeNotiSender = noti.title;
+            activeNotiSender = noti.sender; // DB 저장을 위해 sender 속성 사용
 
             document.getElementById('noti-icon-container').innerHTML = noti.iconHtml;
-            document.getElementById('noti-title').textContent = noti.title;
-            document.getElementById('noti-msg').textContent = noti.msg;
+            document.getElementById('noti-title').innerHTML = noti.title; // 텍스트 대신 HTML 렌더링
+            
+            const msgEl = document.getElementById('noti-msg');
+            msgEl.innerHTML = noti.msg; // 텍스트 대신 HTML 태그 렌더링
+            
+            // 타이틀이 비어있을 경우 불필요한 좌측 여백 제거
+            if (noti.title === '') {
+                msgEl.classList.remove('ml-1.5');
+            } else {
+                msgEl.classList.add('ml-1.5');
+            }
             
             notiEl.classList.add('show');
             isNotiVisible = true;
@@ -446,15 +455,33 @@
             }
 
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
-            // [수정됨] 내 개인 아이디 fallback을 모두 user_123으로 변경
             myId = document.getElementById('my-id').value.trim() || `user_123`;
             loverName = document.getElementById('lover-name').value.trim() || `user_123`;
             adName = document.getElementById('ad-name').value.trim() || `musinsa_official`;
 
             dynamicNotifications = {
-                'Lover': { type: 'Lover', iconHtml: ICONS.instagram, title: myId, msg: `${loverName} 머하고잇어?` },
-                'Ad': { type: 'Ad', iconHtml: ICONS.instagram, title: adName, msg: '회원님을 위한 단 하루 특가 쿠폰이 도착했습니다.' },
-                'General': { type: 'General', iconHtml: ICONS.instagram, title: 'User_123', msg: '안녕하세요' }
+                // [수정됨] 본인 아이디(일반) + 애인 아이디(굵게) + 메시지 텍스트 조합
+                'Lover': { 
+                    type: 'Lover', 
+                    sender: loverName, 
+                    iconHtml: ICONS.instagram, 
+                    title: '', 
+                    msg: `<span class="text-white">${myId}:</span> <span class="font-bold text-white">${loverName}</span> 머하고 있어.` 
+                },
+                'Ad': { 
+                    type: 'Ad', 
+                    sender: adName, 
+                    iconHtml: ICONS.instagram, 
+                    title: adName, 
+                    msg: '회원님을 위한 단 하루 특가 쿠폰이 도착했습니다.' 
+                },
+                'General': { 
+                    type: 'General', 
+                    sender: 'User_123', 
+                    iconHtml: ICONS.instagram, 
+                    title: 'User_123', 
+                    msg: '안녕하세요' 
+                }
             };
 
             currentTrial = 0;
