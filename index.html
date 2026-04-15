@@ -65,16 +65,16 @@
             cursor: pointer;
         }
         
-        /* 🌟 핵심 변경: 팝업이 내려오는 Y축 위치 조정 (80px -> 40px 로 살짝 올려줌) */
+        /* 🌟 핵심 변경: 팝업이 내려오는 Y축 위치 조정 (테스트하신 5px 적용) */
         .modern-pill-notification.show {
-            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 40px)); 
+            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); 
         }
 
         /* 📱 인스타그램 다크모드 알림 스타일 (관계성) */
         .noti-insta {
             width: fit-content;
             max-width: 92%;
-            background-color: #212121; 
+            background-color: #8F8F8F; /* 💡 테스트하신 색상 적용 */
             border-radius: 9999px; 
             padding: 4px 14px 4px 4px; 
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
@@ -84,9 +84,9 @@
         .noti-kakao {
             width: 92%;
             max-width: 420px;
-            background-color: #1a1a1a; 
+            background-color: #8F8F8F; /* 💡 테스트하신 색상 적용 */
             border-radius: 9999px; 
-            padding: 6px 14px 6px 8px; /* 💡 핵심 변경: 위아래 여백(padding)을 줄여서 훨씬 얇고 슬림하게 만듦 */
+            padding: 6px 14px 6px 8px; 
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
@@ -270,9 +270,9 @@
             notiDuration: 4000           
         };
 
-        // 🌟 [미리보기용] 엑스박스 방지를 위해 임시 이미지 주소 할당 (나중에 실제 경로 './ad_profile.jpg' 로 원복하세요!)
+        // 🌟 깃허브 실전용 이미지 경로 복구
         const IMAGE_URLS = {
-            adProfile: 'https://i.imgur.com/vHUKuN9.png' 
+            adProfile: './ad_profile.jpg' 
         };
 
         function preloadImages() {
