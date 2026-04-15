@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
 
-    <title>알림 방해 인지 실험 (산수 과제 & 관리자 모드)</title>
+    <title>알림 방해 인지 실험 (실행 화면)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,9 +40,7 @@
             left: 0;
             background-color: #ffffff; 
         }
-        .screen.active {
-            display: flex;
-        }
+        .screen.active { display: flex; }
 
         .math-text {
             font-size: 4.5rem;
@@ -52,7 +50,7 @@
             text-align: center;
         }
 
-        /* 📱 공통 알림 배너 애니메이션 & 베이스 */
+        /* 알림 배너 애니메이션 */
         .modern-pill-notification {
             position: absolute;
             top: 0; 
@@ -64,27 +62,23 @@
             align-items: center;
             cursor: pointer;
         }
-        
-        /* 🌟 핵심 변경: 팝업이 내려오는 Y축 위치 조정 (테스트하신 5px 적용) */
         .modern-pill-notification.show {
             transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); 
         }
 
-        /* 📱 인스타그램 다크모드 알림 스타일 (관계성) */
         .noti-insta {
             width: fit-content;
             max-width: 92%;
-            background-color: #8F8F8F; /* 💡 테스트하신 색상 적용 */
+            background-color: #8F8F8F;
             border-radius: 9999px; 
             padding: 4px 14px 4px 4px; 
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
         }
 
-        /* 📱 카카오톡 안드로이드 다크모드 팝업 (광고성) */
         .noti-kakao {
             width: 92%;
             max-width: 420px;
-            background-color: #8F8F8F; /* 💡 테스트하신 색상 적용 */
+            background-color: #8F8F8F;
             border-radius: 9999px; 
             padding: 6px 14px 6px 8px; 
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -119,10 +113,6 @@
             background-color: #ffffff;
         }
         .custom-input::placeholder { color: #9ca3af; }
-
-        .admin-table-container::-webkit-scrollbar { width: 6px; height: 6px; }
-        .admin-table-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-        .admin-table-container::-webkit-scrollbar-track { background: #f3f4f6; }
     </style>
 </head>
 <body>
@@ -217,48 +207,6 @@
         </div>
     </div>
 
-    <!-- 6. 관리자 전용 화면 -->
-    <div id="screen-admin" class="screen p-6 bg-gray-50">
-        <div class="flex flex-col w-full h-full max-w-5xl mx-auto pt-10 pb-6">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">데이터베이스 관리자</h2>
-                    <p class="text-sm text-gray-500 mt-1">Supabase 실시간 데이터</p>
-                </div>
-                <div class="flex gap-2">
-                    <button id="btn-admin-refresh" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm font-semibold transition-colors border border-gray-300">새로고침</button>
-                    <button id="btn-admin-close" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition-colors">닫기</button>
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-auto admin-table-container bg-white rounded-xl border border-gray-200 shadow-sm relative">
-                <table class="w-full text-left text-[13px] text-gray-600 whitespace-nowrap">
-                    <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm border-b border-gray-200">
-                        <tr>
-                            <th class="p-3 font-semibold">실험번호(expNum)</th>
-                            <th class="p-3 font-semibold">알림 유형</th>
-                            <th class="p-3 font-semibold">Question</th>
-                            <th class="p-3 font-semibold">알림 발생</th>
-                            <th class="p-3 font-semibold">반응시간(ms)</th>
-                            <th class="p-3 font-semibold">정답여부</th>
-                            <th class="p-3 font-semibold">저장시간</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-table-body" class="divide-y divide-gray-100">
-                        <tr><td colspan="7" class="text-center py-10 text-gray-400">데이터를 불러오는 중입니다...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-4 flex justify-between items-center">
-                <span id="admin-total-count" class="text-sm text-gray-500 font-medium">총 데이터: 0 건</span>
-                <button id="btn-admin-download-all" class="px-5 py-3 bg-[#4B7DD1] text-white rounded-xl text-sm font-bold shadow-md tap-effect">
-                    ⬇ 전체 데이터 CSV 백업
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
@@ -266,11 +214,10 @@
 
         const CONFIG = {
             totalTrials: 20,             
-            fixationTime: 600,           
-            notiDuration: 4000           
+            fixationTime: 600,            
+            notiDuration: 4000            
         };
 
-        // 🌟 깃허브 실전용 이미지 경로 복구
         const IMAGE_URLS = {
             adProfile: './ad_profile.jpg' 
         };
@@ -333,102 +280,17 @@
         let currentEquation = "";
         let currentCorrectAnswer = 0;
 
-        let adminDataDump = [];
-
         const screens = {
             intro: document.getElementById('screen-intro'),
             fixation: document.getElementById('screen-fixation'),
             task: document.getElementById('screen-task'),
-            result: document.getElementById('screen-result'),
-            admin: document.getElementById('screen-admin')
+            result: document.getElementById('screen-result')
         };
         const notiEl = document.getElementById('notification');
         const ansBtns = [
             document.getElementById('ans-btn-0'), document.getElementById('ans-btn-1'),
             document.getElementById('ans-btn-2'), document.getElementById('ans-btn-3')
         ];
-
-        async function openAdminDashboard() {
-            showScreen('admin');
-            fetchAdminData();
-        }
-
-        async function fetchAdminData() {
-            const tbody = document.getElementById('admin-table-body');
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-400">데이터를 불러오는 중입니다...</td></tr>';
-            
-            if (db) {
-                const { data, error } = await db.from('Trials').select('*').order('created_at', { ascending: false });
-                
-                if (error) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-red-500">데이터 호출 실패: ${error.message}</td></tr>`;
-                    return;
-                }
-
-                adminDataDump = data;
-                document.getElementById('admin-total-count').textContent = `총 데이터: ${data.length} 건`;
-
-                if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-400">아직 데이터가 없습니다.</td></tr>';
-                } else {
-                    tbody.innerHTML = data.map(row => {
-                        const dateObj = new Date(row.created_at);
-                        const timeString = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-                        
-                        const expNumText = row.exp_number || 'N/A';
-                        
-                        let numMatched = expNumText.match(/\d+/);
-                        let num = numMatched ? parseInt(numMatched[0], 10) : 1;
-                        let groupType = (num % 2 === 0) ? '관계성' : '광고성';
-                        let groupColor = (groupType === '관계성') ? 'text-pink-600' : 'text-blue-600';
-                        
-                        let notiFired = (row.notification_phase === 1) ? '<span class="text-gray-800 font-bold">O</span>' : '<span class="text-gray-400">X</span>';
-
-                        return `
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="p-3 border-b border-gray-100 font-bold text-gray-800">${expNumText}</td>
-                                <td class="p-3 border-b border-gray-100 font-bold ${groupColor}">${groupType}</td>
-                                <td class="p-3 border-b border-gray-100">${row.trial_number}</td>
-                                <td class="p-3 border-b border-gray-100">${notiFired}</td>
-                                <td class="p-3 border-b border-gray-100">${row.reaction_time_ms} ms</td>
-                                <td class="p-3 border-b border-gray-100">${row.is_correct ? '<span class="text-green-600 font-medium">정답</span>' : '<span class="text-red-500 font-medium">오답</span>'}</td>
-                                <td class="p-3 border-b border-gray-100 text-gray-400">${timeString}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-            }
-        }
-
-        document.getElementById('btn-admin-close').addEventListener('click', () => { showScreen('intro'); });
-        document.getElementById('btn-admin-refresh').addEventListener('click', fetchAdminData);
-        
-        document.getElementById('btn-admin-download-all').addEventListener('click', () => {
-            if (adminDataDump.length === 0) return alert("다운로드할 데이터가 없습니다.");
-
-            const headers = ['Exp_Num', 'Group_Type', 'Question', 'Noti_Fired', 'Reaction_Time_ms', 'Is_Correct', 'Created_At']; 
-            const csvRows = [headers.join(',')];
-
-            adminDataDump.forEach(row => {
-                let numMatched = row.exp_number ? row.exp_number.match(/\d+/) : null;
-                let num = numMatched ? parseInt(numMatched[0], 10) : 1;
-                let groupType = (num % 2 === 0) ? '관계성' : '광고성';
-                let notiFired = (row.notification_phase === 1) ? 'O' : 'X';
-
-                const values = [
-                    row.exp_number, groupType, row.trial_number, notiFired,
-                    row.reaction_time_ms, row.is_correct, row.created_at
-                ];
-                csvRows.push(values.join(','));
-            });
-
-            const csvContent = "\uFEFF" + csvRows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `All_Database_Backup.csv`;
-            link.click();
-        });
 
         function showScreen(screenName) {
             Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -492,9 +354,9 @@
         document.getElementById('btn-start').addEventListener('click', () => {
             expNum = document.getElementById('exp-number').value.trim();
 
+            // 💡 1111을 치면 관리자 파일(admin.html)로 이동하도록 변경
             if (expNum === '1111') {
-                document.getElementById('exp-number').value = '';
-                openAdminDashboard();
+                window.location.href = 'admin.html';
                 return;
             }
 
@@ -519,14 +381,6 @@
                     iconHtml: ICONS.kakaoAd, 
                     title: adName, 
                     msg: `(광고) 회원님을 위한 단 하루 특가 쿠폰이 도착했습니다.` 
-                },
-                'General': { 
-                    type: 'General', 
-                    template: 'insta',
-                    sender: 'User_123', 
-                    iconHtml: ICONS.instagram, 
-                    title: 'User_123', 
-                    msg: '안녕하세요' 
                 }
             };
 
