@@ -64,8 +64,10 @@
             align-items: center;
             cursor: pointer;
         }
+        
+        /* 🌟 핵심 변경: 팝업이 내려오는 Y축 위치 조정 (80px -> 40px 로 살짝 올려줌) */
         .modern-pill-notification.show {
-            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 10px));
+            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 40px)); 
         }
 
         /* 📱 인스타그램 다크모드 알림 스타일 (관계성) */
@@ -81,10 +83,10 @@
         /* 📱 카카오톡 안드로이드 다크모드 팝업 (광고성) */
         .noti-kakao {
             width: 92%;
-            max-width: 350px;
+            max-width: 420px;
             background-color: #1a1a1a; 
             border-radius: 9999px; 
-            padding: 10px 16px 10px 12px;
+            padding: 6px 14px 6px 8px; /* 💡 핵심 변경: 위아래 여백(padding)을 줄여서 훨씬 얇고 슬림하게 만듦 */
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
@@ -125,7 +127,7 @@
 </head>
 <body>
 
-    <!-- 1. 알림 팝업 UI (JS에서 조건에 따라 내용물 교체) -->
+    <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
     <!-- 2. 시작 화면 -->
@@ -268,9 +270,9 @@
             notiDuration: 4000           
         };
 
-        // 🌟 [핵심 변경사항] 현재 깃허브 구조에 맞게 경로 수정
+        // 🌟 [미리보기용] 엑스박스 방지를 위해 임시 이미지 주소 할당 (나중에 실제 경로 './ad_profile.jpg' 로 원복하세요!)
         const IMAGE_URLS = {
-            adProfile: './ad_profile.jpg' 
+            adProfile: 'https://i.imgur.com/vHUKuN9.png' 
         };
 
         function preloadImages() {
@@ -281,14 +283,12 @@
         window.onload = preloadImages;
 
         const ICONS = {
-            // 💡 지인(관계성)은 이미지를 쓰지 않으므로 기본 인스타 그라데이션 복구!
             instagram: `<div class="absolute inset-0 rounded-full" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"></div>
                         <svg class="relative z-10 w-[14px] h-[14px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="3"></line>
                         </svg>`,
-            // 💡 광고성 알림은 올려주신 스마일(ad_profile.jpg)을 렌더링!
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`
         };
 
@@ -447,14 +447,14 @@
                 notiEl.className = 'modern-pill-notification noti-kakao';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
-                        <div class="w-[26px] h-[26px] rounded-full flex-shrink-0 bg-[#FEE500] overflow-hidden flex items-center justify-center">
+                        <div class="w-[24px] h-[24px] rounded-full flex-shrink-0 bg-[#FEE500] overflow-hidden flex items-center justify-center">
                             ${noti.iconHtml}
                         </div>
-                        <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
-                            <span class="text-[14px] font-bold text-white tracking-tight">${noti.title}</span>
-                            <span class="text-[14px] text-gray-300 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                        <div class="ml-2 flex-1 overflow-hidden whitespace-nowrap flex items-center">
+                            <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
+                            <span class="text-[13px] text-gray-300 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
-                        <svg class="w-4 h-4 text-gray-500 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 text-gray-500 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
