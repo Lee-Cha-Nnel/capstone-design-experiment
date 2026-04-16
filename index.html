@@ -117,13 +117,18 @@
 </head>
 <body>
 
+    <!-- 📱 기종 확인용 뱃지 (좌측 상단 고정) -->
+    <div id="device-badge" class="absolute top-3 left-3 z-[10000] bg-gray-100/80 backdrop-blur-sm border border-gray-200 text-gray-500 text-[10px] font-mono px-2 py-1 rounded-md shadow-sm pointer-events-none">
+        기기 판별 중...
+    </div>
+
     <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
     <!-- 2. 시작 화면 -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
-            <h1 class="text-3xl font-bold mb-3 text-gray-800">실험 검사</h1>
+            <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4">실험 검사</h1>
             <p class="text-gray-500 mb-6 text-center text-[14px] leading-relaxed">
                 화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
                 하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
@@ -227,7 +232,30 @@
                 const img = new Image(); img.src = url;
             });
         }
-        window.onload = preloadImages;
+        
+        // 🌟 전역 기기 변수 및 기기 판별 함수 추가
+        let userDeviceType = "Unknown";
+
+        function detectDevice() {
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
+                return 'iOS_Apple';
+            } else if (ua.indexOf('android') > -1) {
+                if (ua.indexOf('samsungbrowser') > -1 || ua.indexOf('sm-') > -1) {
+                    return 'Android_Samsung';
+                }
+                return 'Android_Other';
+            } else {
+                return 'PC_or_Unknown';
+            }
+        }
+
+        window.onload = () => {
+            preloadImages();
+            // 💡 접속하자마자 기종 판별 후 좌측 상단 뱃지 업데이트
+            userDeviceType = detectDevice();
+            document.getElementById('device-badge').innerText = `📱 ${userDeviceType}`;
+        };
 
         const ICONS = {
             instagram: `<div class="absolute inset-0 rounded-full" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"></div>
@@ -354,7 +382,6 @@
         document.getElementById('btn-start').addEventListener('click', () => {
             expNum = document.getElementById('exp-number').value.trim();
 
-            // 💡 1111을 치면 관리자 파일(admin.html)로 이동하도록 변경
             if (expNum === '1111') {
                 window.location.href = 'admin.html';
                 return;
@@ -387,6 +414,10 @@
             currentTrial = 0;
             trialData = [];
             document.getElementById('progress-bar').style.width = '0%';
+            
+            // 💡 실험이 시작되면 방해되지 않도록 기기 정보 뱃지 숨김
+            document.getElementById('device-badge').style.display = 'none';
+            
             hideNotification();
             nextTrial();
         });
@@ -458,16 +489,19 @@
                 phaseNum = 1; 
             }
 
+            // 🌟 로컬 배열에 기기 정보 추가
             trialData.push({
                 expNum: expNum, myId: myId, loverName: loverName, adName: adName,
                 trialNumber: currentTrial, equation: currentEquation,
                 correctAnswer: currentCorrectAnswer, chosenAnswer: selectedValue,
                 notificationType: loggedNotiType, 
                 notificationSender: loggedNotiSender,
-                isCorrect: isCorrect ? 1 : 0, reactionTimeMs: reactionTime
+                isCorrect: isCorrect ? 1 : 0, reactionTimeMs: reactionTime,
+                deviceOS: userDeviceType // 기기 정보 저장
             });
 
             if (db) {
+                // 🌟 Supabase DB 전송 시 기기 정보(device_os) 함께 전송
                 db.from('Trials').insert([{ 
                     participant_id: myId,  
                     exp_number: expNum,
@@ -478,7 +512,8 @@
                     trial_number: currentTrial, 
                     notification_phase: phaseNum, 
                     reaction_time_ms: reactionTime,
-                    is_correct: isCorrect 
+                    is_correct: isCorrect,
+                    device_os: userDeviceType // 기기 정보 컬럼
                 }]).then(({ error }) => {
                     if (error) console.error('DB 전송 에러:', error);
                 });
@@ -510,7 +545,8 @@
         document.getElementById('btn-download-local').addEventListener('click', () => {
             if (trialData.length === 0) return;
             
-            const headers = ['Exp_Num', 'Group_Type', 'Question', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Fired', 'Correct', 'Reaction_Time_ms'];
+            // 🌟 CSV 헤더에 Device_OS 추가
+            const headers = ['Exp_Num', 'Group_Type', 'Question', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Fired', 'Correct', 'Reaction_Time_ms', 'Device_OS'];
             const csvRows = [headers.join(',')];
 
             trialData.forEach(row => {
@@ -519,9 +555,10 @@
                 let groupType = (num % 2 === 0) ? '관계성' : '광고성';
                 let notiFired = (row.notificationType !== 'None') ? 'O' : 'X';
 
+                // 🌟 CSV 데이터에 Device_OS 추가
                 const values = [
                     row.expNum, groupType, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
-                    notiFired, row.isCorrect, row.reactionTimeMs
+                    notiFired, row.isCorrect, row.reactionTimeMs, row.deviceOS
                 ];
                 csvRows.push(values.join(','));
             });
