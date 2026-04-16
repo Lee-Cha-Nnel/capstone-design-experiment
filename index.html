@@ -289,7 +289,7 @@
 
         // 🌟 아이콘 설정 (카카오 기본 프사, 이모티콘, 우측 뱃지)
         const ICONS = {
-            kakaoAd: `<svg class="w-2/3 h-2/3 text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
             kakaoDefault: `<svg class="w-2/3 h-2/3 text-white mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`,
             kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
         };
@@ -434,7 +434,7 @@
                     type: 'Ad', 
                     sender: adName, 
                     iconHtml: ICONS.kakaoAd, 
-                    iconBg: 'bg-[#FEE500]', // 옐로우 배경
+                    iconBg: 'bg-white', // 💡 이미지가 깔끔하게 들어가도록 흰색 배경으로 변경
                     title: adName, 
                     msg: `(광고) 오늘은 이모티콘 무료로 받는날!`
                 }
