@@ -119,11 +119,6 @@
 </head>
 <body>
 
-    <!-- 📱 기종 확인용 뱃지 (좌측 상단 고정) -->
-    <div id="device-badge" class="absolute top-3 left-3 z-[10000] bg-gray-100/80 backdrop-blur-sm border border-gray-200 text-gray-500 text-[10px] font-mono px-2 py-1 rounded-md shadow-sm pointer-events-none">
-        기기 판별 중...
-    </div>
-
     <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
@@ -131,10 +126,21 @@
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
             <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4">실험 검사</h1>
-            <p class="text-gray-500 mb-6 text-center text-[14px] leading-relaxed">
+            <p class="text-gray-500 mb-4 text-center text-[14px] leading-relaxed">
                 화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
                 하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
             </p>
+
+            <!-- 🛠️ 테스트용 OS 강제 선택 패널 -->
+            <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
+                <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
+                <div class="flex gap-2 justify-center">
+                    <button id="btn-os-auto" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600">자동 감지</button>
+                    <button id="btn-os-ios" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">아이폰</button>
+                    <button id="btn-os-android" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">안드로이드</button>
+                </div>
+                <p class="text-center text-[10px] text-blue-600/70 mt-2.5 font-medium">현재 적용된 상태: <strong id="current-os-span" class="text-blue-800 font-mono"></strong></p>
+            </div>
             
             <div class="w-full bg-gray-50 p-5 rounded-2xl mb-8 border border-gray-200 shadow-sm">
                 <p class="text-center mb-5">
@@ -234,10 +240,52 @@
             }
         }
 
+        // 상태 업데이트 렌더링 함수
+        function updateOsStatusText() {
+            document.getElementById('current-os-span').innerText = userDeviceType;
+        }
+
         window.onload = () => {
             userDeviceType = detectDevice();
-            document.getElementById('device-badge').innerText = `📱 ${userDeviceType}`;
+            updateOsStatusText();
         };
+
+        // 🛠️ 테스트용 OS 강제 선택 버튼 로직
+        const btnOsAuto = document.getElementById('btn-os-auto');
+        const btnOsIos = document.getElementById('btn-os-ios');
+        const btnOsAndroid = document.getElementById('btn-os-android');
+
+        function resetOsButtons() {
+            [btnOsAuto, btnOsIos, btnOsAndroid].forEach(btn => {
+                btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50';
+            });
+        }
+
+        function setOsButtonActive(btn) {
+            btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600';
+        }
+
+        btnOsAuto.addEventListener('click', () => {
+            resetOsButtons();
+            setOsButtonActive(btnOsAuto);
+            userDeviceType = detectDevice();
+            updateOsStatusText();
+        });
+
+        btnOsIos.addEventListener('click', () => {
+            resetOsButtons();
+            setOsButtonActive(btnOsIos);
+            userDeviceType = 'iOS_Apple'; // 아이폰 강제 설정
+            updateOsStatusText();
+        });
+
+        btnOsAndroid.addEventListener('click', () => {
+            resetOsButtons();
+            setOsButtonActive(btnOsAndroid);
+            userDeviceType = 'Android_Samsung'; // 안드로이드 강제 설정
+            updateOsStatusText();
+        });
+
 
         // 🌟 아이콘 설정 (카카오 기본 프사, 이모티콘, 우측 뱃지)
         const ICONS = {
@@ -395,8 +443,6 @@
             currentTrial = 0;
             trialData = [];
             document.getElementById('progress-bar').style.width = '0%';
-            
-            document.getElementById('device-badge').style.display = 'none';
             
             hideNotification();
             nextTrial();
