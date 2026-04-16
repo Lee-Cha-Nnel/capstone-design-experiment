@@ -50,30 +50,41 @@
             text-align: center;
         }
 
-        /* 알림 배너 애니메이션 */
+        /* 📱 알림 배너 공통 및 OS별 애니메이션 */
         .modern-pill-notification {
             position: absolute;
             top: 0; 
             left: 50%;
             transform: translate(-50%, -150px);
-            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 9999;
             display: flex;
             align-items: center;
             cursor: pointer;
         }
-        .modern-pill-notification.show {
-            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); 
-        }
+        .modern-pill-notification.anim-android { transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .modern-pill-notification.anim-ios { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15); }
+        .modern-pill-notification.show { transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); }
 
-        .noti-kakao {
-            width: 92%;
-            max-width: 420px;
+        /* 🤖 안드로이드 스타일 (기존 짙은 회색) */
+        .style-android {
+            width: 92%; max-width: 420px;
             background-color: #8F8F8F;
             border-radius: 9999px; 
             padding: 6px 14px 6px 8px; 
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+
+        /* 🍎 아이폰 스타일 (라이트 글래스모피즘) */
+        .style-ios {
+            width: 95%; max-width: 420px;
+            background-color: rgba(240, 240, 240, 0.8);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            backdrop-filter: blur(25px) saturate(200%);
+            border-radius: 26px; 
+            padding: 10px 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 0.5px solid rgba(255, 255, 255, 0.5); 
         }
 
         .tap-effect:active {
@@ -205,19 +216,10 @@
             fixationTime: 600,            
             notiDuration: 4000            
         };
-
-        const IMAGE_URLS = {
-            adProfile: './ad_profile.jpg' 
-        };
-
-        function preloadImages() {
-            Object.values(IMAGE_URLS).forEach(url => {
-                const img = new Image(); img.src = url;
-            });
-        }
         
         let userDeviceType = "Unknown";
 
+        // 💡 접속 기종(OS) 판별 함수
         function detectDevice() {
             const ua = navigator.userAgent.toLowerCase();
             if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
@@ -233,15 +235,15 @@
         }
 
         window.onload = () => {
-            preloadImages();
             userDeviceType = detectDevice();
             document.getElementById('device-badge').innerText = `📱 ${userDeviceType}`;
         };
 
-        // 💡 아이콘 설정 (카카오 기본 프사 & 카카오이모티콘 로고)
+        // 🌟 아이콘 설정 (카카오 기본 프사, 이모티콘, 우측 뱃지)
         const ICONS = {
-            kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
-            kakaoDefault: `<svg class="w-2/3 h-2/3 text-white mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`
+            kakaoAd: `<svg class="w-2/3 h-2/3 text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            kakaoDefault: `<svg class="w-2/3 h-2/3 text-white mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`,
+            kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
         };
 
         const TRIAL_SCENARIO = [
@@ -273,12 +275,10 @@
         
         let isNotiVisible = false;
         let notiTimeout = null;
-        let activeNotiType = "None";   
-        let activeNotiSender = "None"; 
 
         let expNum = "";
         let loverName = "";
-        let adName = "카카오이모티콘"; // 고정
+        let adName = "카카오이모티콘"; 
         let dynamicNotifications = {}; 
 
         let currentEquation = "";
@@ -301,30 +301,53 @@
             screens[screenName].classList.add('active');
         }
 
+        // 🌟 핵심: 기종(OS)에 따라 알림 UI를 다르게 렌더링하는 로직
         function showSpecificNotification(type) {
             if (isNotiVisible || type === "None" || !dynamicNotifications[type]) return;
             
             const noti = dynamicNotifications[type];
-            
-            activeNotiType = noti.type;
-            activeNotiSender = noti.sender; 
+            const isIOS = userDeviceType.includes('iOS'); // 아이폰인지 확인
 
-            // 💡 두 조건 모두 동일하게 카카오톡 UI 배너 사용
-            notiEl.className = 'modern-pill-notification noti-kakao';
-            notiEl.innerHTML = `
-                <div class="flex items-center w-full">
-                    <div class="w-[24px] h-[24px] rounded-full flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center">
-                        ${noti.iconHtml}
+            if (isIOS) {
+                // 🍎 아이폰(iOS) 스타일 렌더링 (캡처본 완벽 적용)
+                notiEl.className = 'modern-pill-notification anim-ios style-ios';
+                notiEl.innerHTML = `
+                    <div class="flex items-center w-full">
+                        <div class="relative w-[54px] h-[54px] flex-shrink-0">
+                            <div class="w-full h-full rounded-full ${noti.iconBg} overflow-hidden flex items-center justify-center border border-gray-100/50">
+                                ${noti.iconHtml}
+                            </div>
+                            <div class="absolute -bottom-0.5 -right-0.5 w-[20px] h-[20px] bg-[#FEE500] rounded-[7px] flex items-center justify-center border-[2px] border-white/80 shadow-sm">
+                               ${ICONS.kakaoBadge}
+                            </div>
+                        </div>
+                        <div class="ml-3.5 flex-1 flex flex-col justify-center overflow-hidden">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="text-[15px] font-bold text-gray-900 tracking-tight leading-tight truncate pr-2">${noti.title}</span>
+                                <span class="text-[13px] text-gray-500 font-normal flex-shrink-0">지금</span>
+                            </div>
+                            <span class="text-[15px] text-gray-800 truncate font-normal tracking-tight leading-tight mt-1">${noti.msg}</span>
+                        </div>
                     </div>
-                    <div class="ml-2 flex-1 overflow-hidden whitespace-nowrap flex items-center">
-                        <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
-                        <span class="text-[13px] text-gray-300 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                `;
+            } else {
+                // 🤖 안드로이드 스타일 렌더링 (기존 헤즈업 형태)
+                notiEl.className = 'modern-pill-notification anim-android style-android';
+                notiEl.innerHTML = `
+                    <div class="flex items-center w-full">
+                        <div class="w-[24px] h-[24px] rounded-full flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center">
+                            ${noti.iconHtml}
+                        </div>
+                        <div class="ml-2 flex-1 overflow-hidden whitespace-nowrap flex items-center">
+                            <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
+                            <span class="text-[13px] text-gray-300 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                        </div>
+                        <svg class="w-3.5 h-3.5 text-gray-500 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                        </svg>
                     </div>
-                    <svg class="w-3.5 h-3.5 text-gray-500 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
-            `;
+                `;
+            }
             
             notiEl.classList.add('show');
             isNotiVisible = true;
@@ -336,8 +359,6 @@
         function hideNotification() {
             notiEl.classList.remove('show');
             isNotiVisible = false;
-            activeNotiType = "None";
-            activeNotiSender = "None";
         }
 
         document.getElementById('btn-start').addEventListener('click', () => {
@@ -351,13 +372,13 @@
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
-            // 💡 두 알림 모두 완벽한 카카오톡 포맷으로 통일
+            // 그룹별 알림 텍스트 및 데이터 세팅 (UI 구성은 위 함수에서 처리됨)
             dynamicNotifications = {
                 'Lover': { 
                     type: 'Lover', 
                     sender: loverName, 
                     iconHtml: ICONS.kakaoDefault, 
-                    iconBg: 'bg-[#9BA5B1]', // 카카오톡 기본 프사 배경색
+                    iconBg: 'bg-[#9BA5B1]', // 회색 배경
                     title: loverName, 
                     msg: `머하고 잇어?` 
                 },
@@ -365,7 +386,7 @@
                     type: 'Ad', 
                     sender: adName, 
                     iconHtml: ICONS.kakaoAd, 
-                    iconBg: 'bg-[#FEE500]', // 카카오톡 옐로우
+                    iconBg: 'bg-[#FEE500]', // 옐로우 배경
                     title: adName, 
                     msg: `(광고) 오늘은 이모티콘 무료로 받는날!`
                 }
@@ -460,7 +481,7 @@
 
             if (db) {
                 db.from('Trials').insert([{ 
-                    participant_id: expNum, // myId가 사라졌으므로 expNum으로 통일
+                    participant_id: expNum,
                     exp_number: expNum,
                     lover_name: loverName,
                     ad_name: adName,
