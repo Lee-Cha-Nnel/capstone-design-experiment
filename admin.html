@@ -98,13 +98,35 @@
         <!-- 하단: 그래프 & 데이터 테이블 영역 -->
         <div class="flex flex-col xl:flex-row gap-6 flex-1 min-h-0">
             
-            <!-- 실시간 그래프 -->
-            <div id="chart-section" class="w-full xl:w-1/3 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col shrink-0 transition-all duration-300">
-                <h3 class="text-lg font-bold text-gray-800 mb-2">📈 알림 발생 시 평균 RT</h3>
-                <p class="text-xs text-gray-500 mb-6">11번 문제에서 알림이 발생했을 때 지연 비교</p>
-                <div class="relative flex-1 w-full min-h-[250px]">
-                    <canvas id="rtChart"></canvas>
+            <!-- 🌟 실시간 그래프 패널 (1단계 + 2단계 세로 배치) -->
+            <div id="chart-section" class="w-full xl:w-1/3 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col shrink-0 overflow-y-auto transition-all duration-300 gap-8">
+                
+                <!-- [1단계] 선그래프: 잔여 효과 -->
+                <div>
+                    <h3 class="text-base font-bold text-gray-800 mb-1">💡 1단계: 알림 전후 회복 시간 (잔여 효과)</h3>
+                    <p class="text-[11px] text-gray-500 mb-3">Pre(7~10번 평균) vs Post(12~15번 평균)</p>
+                    <div class="relative w-full h-[180px]">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                    <div id="insight-box-1" class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 leading-relaxed font-medium">
+                        데이터 대기 중...
+                    </div>
                 </div>
+
+                <hr class="border-gray-100">
+
+                <!-- [2단계] 막대그래프: 타겟 충격량 -->
+                <div>
+                    <h3 class="text-base font-bold text-gray-800 mb-1">💡 2단계: 그룹 간 타겟 알림 충격량</h3>
+                    <p class="text-[11px] text-gray-500 mb-3">11번 문항(알림 발생 시점) 평균 비교</p>
+                    <div class="relative w-full h-[180px]">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                    <div id="insight-box-2" class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 leading-relaxed font-medium">
+                        데이터 대기 중...
+                    </div>
+                </div>
+
             </div>
 
             <!-- 데이터 테이블 영역 -->
@@ -129,6 +151,7 @@
                             <tr>
                                 <th class="py-3 px-4 font-bold">참여자 ID</th>
                                 <th class="py-3 px-4 font-bold">그룹 (Type)</th>
+                                <th class="py-3 px-4 font-bold">기기 (OS)</th> <!-- 🌟 기기 항목 추가 -->
                                 <th class="py-3 px-4 font-bold">진행</th>
                                 <th class="py-3 px-4 font-bold">알림 여부</th>
                                 <th class="py-3 px-4 font-bold text-right">반응시간 (RT)</th>
@@ -138,7 +161,7 @@
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-gray-200">
-                            <tr><td colspan="8" class="text-center py-12 text-gray-400">데이터를 불러오는 중입니다...</td></tr>
+                            <tr><td colspan="9" class="text-center py-12 text-gray-400">데이터를 불러오는 중입니다...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -157,7 +180,8 @@
 
         let rawData = [];
         let currentFilter = 'All';
-        let myChart = null;
+        let lineChart = null;
+        let barChart = null;
 
         // ==========================================
         // 2. 커스텀 모달(팝업) 시스템
@@ -224,86 +248,127 @@
         });
 
         // ==========================================
-        // 4. 차트 초기화
+        // 4. 차트 초기화 (🌟 1단계, 2단계 복구)
         // ==========================================
         Chart.defaults.font.family = "'Pretendard', sans-serif";
-        const ctx = document.getElementById('rtChart').getContext('2d');
         
-        function initChart() {
-            myChart = new Chart(ctx, {
+        function initCharts() {
+            // [1단계] 선그래프
+            lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Pre (7~10번)', 'Post (12~15번)'],
+                    datasets: [
+                        { label: '관계성', data: [0, 0], borderColor: '#e11d48', backgroundColor: '#e11d48', tension: 0.1, borderWidth: 2, pointRadius: 4 },
+                        { label: '광고성', data: [0, 0], borderColor: '#4B7DD1', backgroundColor: '#4B7DD1', tension: 0.1, borderWidth: 2, pointRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: {size: 10} } } },
+                    scales: { y: { beginAtZero: false, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 10} } } }
+                }
+            });
+
+            // [2단계] 막대그래프
+            barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['관계성 (Lover)', '광고성 (Ad)'],
                     datasets: [{
-                        label: '평균 반응시간 (ms)',
+                        label: '11번 문항 평균 반응시간 (ms)',
                         data: [0, 0],
                         backgroundColor: ['#e11d48', '#4B7DD1'], 
-                        borderRadius: 6,
-                        barPercentage: 0.6
+                        borderRadius: 4, barPercentage: 0.5
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, title: { display: true, text: '반응시간 (ms)', font: { weight: 'bold' } } },
-                        x: { ticks: { font: { weight: 'bold', size: 13 } } }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 11, weight:'bold'} } } }
                 }
             });
         }
-        initChart();
+        initCharts();
+
+        // 특정 그룹/문항 평균 구하기 헬퍼
+        function getGroupAvg(data, targetGroup, trialArray) {
+            const fData = data.filter(d => {
+                let num = d.exp_number ? parseInt(d.exp_number.match(/\d+/)?.[0] || "1", 10) : 1;
+                let g = (num % 2 === 0) ? 'Lover' : 'Ad';
+                return g === targetGroup && trialArray.includes(d.trial_number);
+            });
+            if(fData.length === 0) return 0;
+            return Math.round(fData.reduce((sum, d) => sum + d.reaction_time_ms, 0) / fData.length);
+        }
 
         // ==========================================
         // 5. 데이터 로드 및 통계 계산
         // ==========================================
         async function loadData() {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-gray-400 font-bold">데이터를 로드하는 중입니다...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-12 text-gray-400 font-bold">데이터를 로드하는 중...</td></tr>';
             
             const { data, error } = await db.from('Trials').select('*').order('created_at', { ascending: false });
-            
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-12 text-red-500">DB 오류: ${error.message}</td></tr>`;
-                return;
-            }
-
+            if (error) { tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-red-500">DB 오류: ${error.message}</td></tr>`; return; }
             rawData = data;
             
             if(rawData.length === 0) {
-                // 더미 데이터 주입 (차트 표시용)
-                rawData = [
-                    { exp_number: "1001", trial_number: 1, notification_phase: 0, reaction_time_ms: 1200, is_correct: 1, created_at: new Date().toISOString() },
-                    { exp_number: "1001", trial_number: 11, notification_phase: 1, notification_type: "Ad", reaction_time_ms: 2800, is_correct: 0, created_at: new Date().toISOString() },
-                    { exp_number: "1002", trial_number: 11, notification_phase: 1, notification_type: "Lover", reaction_time_ms: 4500, is_correct: 0, created_at: new Date().toISOString() }
-                ];
+                rawData = [{ exp_number: "1000", trial_number: 1, notification_phase: 0, reaction_time_ms: 1200, is_correct: 1, device_os: 'iOS_Apple', created_at: new Date().toISOString() }];
             }
-
             updateDashboard();
         }
 
         function updateDashboard() {
             const total = rawData.length;
-            const correctCount = rawData.filter(d => d.is_correct === 1 || d.is_correct === true).length;
-            const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-            
+            const accuracy = total > 0 ? Math.round((rawData.filter(d => d.is_correct === 1 || d.is_correct === true).length / total) * 100) : 0;
             const baselines = rawData.filter(d => d.notification_phase === 0);
             const avgBaseline = baselines.length > 0 ? Math.round(baselines.reduce((acc, cur) => acc + cur.reaction_time_ms, 0) / baselines.length) : 0;
-
-            const targets = rawData.filter(d => d.notification_phase === 1);
-            const loverTargets = targets.filter(d => d.notification_type === 'Lover');
-            const adTargets = targets.filter(d => d.notification_type === 'Ad');
-            
-            const avgLoverRT = loverTargets.length > 0 ? Math.round(loverTargets.reduce((acc, cur) => acc + cur.reaction_time_ms, 0) / loverTargets.length) : 0;
-            const avgAdRT = adTargets.length > 0 ? Math.round(adTargets.reduce((acc, cur) => acc + cur.reaction_time_ms, 0) / adTargets.length) : 0;
 
             document.getElementById('stat-total').textContent = total.toLocaleString();
             document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
             document.getElementById('stat-baseline-rt').textContent = avgBaseline.toLocaleString();
 
-            myChart.data.datasets[0].data = [avgLoverRT, avgAdRT];
-            myChart.update();
+            // 🌟 1단계: 선그래프 연산
+            const preLover = getGroupAvg(rawData, 'Lover', [7, 8, 9, 10]);
+            const postLover = getGroupAvg(rawData, 'Lover', [12, 13, 14, 15]);
+            const preAd = getGroupAvg(rawData, 'Ad', [7, 8, 9, 10]);
+            const postAd = getGroupAvg(rawData, 'Ad', [12, 13, 14, 15]);
+
+            lineChart.data.datasets[0].data = [preLover, postLover];
+            lineChart.data.datasets[1].data = [preAd, postAd];
+            lineChart.update();
+
+            const box1 = document.getElementById('insight-box-1');
+            if (preLover > 0 && postLover > 0) {
+                const loverDelay = postLover - preLover;
+                if (loverDelay > 0) {
+                    box1.innerHTML = `<span class="text-base">✅</span> 관계성 그룹은 알림 직후 평소보다 <b><span class="text-red-600">${loverDelay}ms</span></b> 느리게 회복 중입니다.`;
+                    box1.className = "mt-3 p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-900 font-medium";
+                } else {
+                    box1.innerHTML = `현재 뚜렷한 잔여 효과가 관찰되지 않습니다.`;
+                    box1.className = "mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 font-medium";
+                }
+            }
+
+            // 🌟 2단계: 막대그래프 연산
+            const targetLover = getGroupAvg(rawData, 'Lover', [11]);
+            const targetAd = getGroupAvg(rawData, 'Ad', [11]);
+
+            barChart.data.datasets[0].data = [targetLover, targetAd];
+            barChart.update();
+
+            const box2 = document.getElementById('insight-box-2');
+            if (targetLover > 0 && targetAd > 0) {
+                const diff = Math.abs(targetLover - targetAd);
+                if (targetLover > targetAd) {
+                    box2.innerHTML = `<span class="text-base">✅</span> 관계성 그룹이 광고성보다 <b><span class="text-red-600">${diff}ms</span></b> 더 크게 방해받았습니다.`;
+                    box2.className = "mt-3 p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-900 font-medium";
+                } else {
+                    box2.innerHTML = `두 그룹 간 타겟 반응속도 차이가 없습니다.`;
+                    box2.className = "mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 font-medium";
+                }
+            }
 
             renderTable();
         }
@@ -324,7 +389,7 @@
             }
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-gray-400">해당 조건의 데이터가 없습니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-12 text-gray-400">해당 조건의 데이터가 없습니다.</td></tr>';
                 return;
             }
 
@@ -337,28 +402,22 @@
                 let groupType = (num % 2 === 0) ? '관계성' : '광고성';
                 let groupColor = (groupType === '관계성') ? 'text-pink-600 bg-pink-50' : 'text-blue-600 bg-blue-50';
                 
+                const osText = row.device_os || 'Unknown';
                 const isTarget = row.notification_phase === 1;
                 const rowClass = isTarget ? 'target-row font-semibold' : 'hover:bg-gray-50 transition-colors';
 
                 return `
                     <tr class="${rowClass} border-b border-gray-100">
                         <td class="py-3 px-4 text-gray-800">${expNumText}</td>
-                        <td class="py-3 px-4">
-                            <span class="px-2.5 py-1 rounded-md text-xs font-bold ${groupColor}">${groupType}</span>
-                        </td>
+                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-md text-xs font-bold ${groupColor}">${groupType}</span></td>
+                        <td class="py-3 px-4 text-gray-500 font-mono text-xs">${osText}</td>
                         <td class="py-3 px-4">${row.trial_number} / 20</td>
-                        <td class="py-3 px-4">
-                            ${isTarget ? '📢 알림 O' : '<span class="text-gray-400">-</span>'}
-                        </td>
+                        <td class="py-3 px-4">${isTarget ? '📢 알림 O' : '<span class="text-gray-400">-</span>'}</td>
                         <td class="py-3 px-4 font-mono text-right ${isTarget ? 'text-red-600' : 'text-gray-600'}">${row.reaction_time_ms.toLocaleString()}</td>
-                        <td class="py-3 px-4 text-center">
-                            ${(row.is_correct === 1 || row.is_correct === true) ? '<span class="text-green-600 font-bold">O</span>' : '<span class="text-red-500 font-bold">X</span>'}
-                        </td>
+                        <td class="py-3 px-4 text-center">${(row.is_correct === 1 || row.is_correct === true) ? '<span class="text-green-600 font-bold">O</span>' : '<span class="text-red-500 font-bold">X</span>'}</td>
                         <td class="py-3 px-4 text-gray-400 text-xs">${timeString}</td>
                         <td class="py-3 px-4 text-center">
-                            <button onclick="deleteRow('${row.created_at}')" class="text-gray-400 hover:text-red-500 transition-colors" title="이 기록 삭제하기">
-                                🗑️
-                            </button>
+                            <button onclick="deleteRow('${row.created_at}')" class="text-gray-400 hover:text-red-500 transition-colors" title="이 기록 삭제하기">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -369,29 +428,26 @@
         // 7. 이벤트 및 액션 로직
         // ==========================================
         
-        // 필터 탭 클릭
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50';
-                });
+                document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50');
                 e.target.className = 'filter-btn active px-4 py-2 rounded-lg text-sm font-bold bg-gray-800 text-white shadow-sm';
-                currentFilter = e.target.getAttribute('data-filter');
-                renderTable();
+                currentFilter = e.target.getAttribute('data-filter'); renderTable();
             });
         });
 
-        // 새로고침 & 다운로드
         document.getElementById('btn-refresh').addEventListener('click', loadData);
+        
         document.getElementById('btn-download').addEventListener('click', () => {
             if (rawData.length === 0) return showModal({ title: '알림', desc: '다운로드할 데이터가 없습니다.' });
-            const headers = ['Exp_Num', 'Group_Type', 'Trial', 'Is_Target(Noti)', 'Reaction_Time_ms', 'Correct(1=O)', 'Created_At']; 
+            // 🌟 엑셀 다운로드에 Device_OS 항목 추가
+            const headers = ['Exp_Num', 'Group_Type', 'Device_OS', 'Trial', 'Is_Target(Noti)', 'Reaction_Time_ms', 'Correct(1=O)', 'Created_At']; 
             const csvRows = [headers.join(',')];
             rawData.forEach(row => {
                 let num = row.exp_number ? parseInt(row.exp_number.match(/\d+/)?.[0] || "1", 10) : 1;
                 let groupType = (num % 2 === 0) ? '관계성' : '광고성';
                 let isCorr = (row.is_correct === 1 || row.is_correct === true) ? 1 : 0;
-                const values = [row.exp_number, groupType, row.trial_number, row.notification_phase, row.reaction_time_ms, isCorr, row.created_at];
+                const values = [row.exp_number, groupType, row.device_os || 'Unknown', row.trial_number, row.notification_phase, row.reaction_time_ms, isCorr, row.created_at];
                 csvRows.push(values.join(','));
             });
             const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -399,127 +455,78 @@
             link.download = `Total_DB_Backup_${new Date().getTime()}.csv`; link.click();
         });
 
-        // 전체 삭제 (모달)
         document.getElementById('btn-delete-all').addEventListener('click', () => {
             showModal({
-                title: '⚠️ 전체 데이터 초기화',
-                desc: "경고: DB에 쌓인 모든 데이터가 영구 삭제됩니다.<br>정말 지우시려면 아래 창에 <strong>'삭제'</strong>라고 입력해주세요.",
-                type: 'prompt',
-                confirmText: '영구 삭제',
-                confirmColor: 'bg-red-600',
+                title: '⚠️ 전체 데이터 초기화', desc: "경고: DB에 쌓인 모든 데이터가 영구 삭제됩니다.<br>정말 지우시려면 아래 창에 <strong>'삭제'</strong>라고 입력해주세요.", type: 'prompt', confirmText: '영구 삭제', confirmColor: 'bg-red-600',
                 onConfirm: async (val) => {
                     if (val === '삭제') {
                         const { error } = await db.from('Trials').delete().not('created_at', 'is', null);
-                        if (error) {
-                            showModal({ title: '오류', desc: '삭제 중 오류가 발생했습니다: ' + error.message });
-                        } else {
-                            showModal({ title: '성공', desc: '✅ 모든 테스트 데이터가 초기화되었습니다.' });
-                            loadData(); 
-                        }
-                    } else {
-                        showModal({ title: '취소됨', desc: '입력이 일치하지 않아 취소되었습니다.' });
+                        if (!error) { showModal({ title: '성공', desc: '✅ 모든 테스트 데이터가 초기화되었습니다.' }); loadData(); }
                     }
                 }
             });
         });
 
-        // 개별 삭제 (모달)
         window.deleteRow = (createdAt) => {
             showModal({
-                title: '기록 삭제',
-                desc: '이 참가자의 기록(1줄)을 삭제하시겠습니까?',
-                type: 'confirm',
-                confirmText: '삭제',
-                confirmColor: 'bg-red-600',
-                onConfirm: async () => {
-                    const { error } = await db.from('Trials').delete().eq('created_at', createdAt);
-                    if (error) {
-                        showModal({ title: '오류', desc: '삭제 중 오류가 발생했습니다: ' + error.message });
-                    } else {
-                        loadData(); 
-                    }
-                }
+                title: '기록 삭제', desc: '이 참가자의 기록(1줄)을 삭제하시겠습니까?', type: 'confirm', confirmText: '삭제', confirmColor: 'bg-red-600',
+                onConfirm: async () => { await db.from('Trials').delete().eq('created_at', createdAt); loadData(); }
             });
         };
 
-        // 가짜 데이터 자동 생성 (모달)
+        // 🌟 가짜 데이터(Mock) 생성 로직 고도화
         document.getElementById('btn-generate-mock').addEventListener('click', () => {
             showModal({
-                title: '🧪 가짜 데이터 생성',
-                desc: '테스트용 피험자 30명의 데이터(총 600건)를 DB에 자동 생성하시겠습니까?<br>(논문 가설에 맞춘 통계 데이터가 즉시 주입됩니다.)',
-                type: 'confirm',
-                confirmText: '데이터 생성',
-                confirmColor: 'bg-purple-600',
+                title: '🧪 가짜 데이터 생성', desc: '테스트용 피험자 30명의 데이터(총 600건)를 생성합니다.<br>(기기OS 정보 및 12~15번 문항 잔여 효과 가설 적용)', type: 'confirm', confirmText: '데이터 생성', confirmColor: 'bg-purple-600',
                 onConfirm: async () => {
                     const btn = document.getElementById('btn-generate-mock');
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '⏳ 생성 중...';
-                    btn.disabled = true;
+                    const originalText = btn.innerHTML; btn.innerHTML = '⏳ 생성 중...'; btn.disabled = true;
 
-                    const mockTrials = [];
-                    const baseTime = new Date().getTime();
+                    const mockTrials = []; const baseTime = new Date().getTime();
 
                     for(let i=1; i<=30; i++) {
                         const expNum = 1000 + i; 
                         const groupType = (expNum % 2 === 0) ? 'Lover' : 'Ad'; 
-                        const pId = `mock_user_${i}`;
+                        const randomOS = Math.random() > 0.5 ? 'iOS_Apple' : 'Android_Samsung';
 
                         for(let t=1; t<=20; t++) {
-                            const isTarget = (t === 11); // 11번이 타겟 알림
+                            const isTarget = (t === 11);
                             let rt, isCorr, notiType, phase;
+                            const noise = Math.floor(Math.random() * 400) - 200;
 
                             if(isTarget) {
-                                phase = 1;
-                                notiType = groupType;
-                                if(groupType === 'Lover') {
-                                    rt = Math.floor(4000 + (Math.random() * 1600 - 800)); 
-                                    isCorr = Math.random() > 0.2; // boolean으로 삽입
-                                } else {
-                                    rt = Math.floor(2500 + (Math.random() * 1000 - 500)); 
-                                    isCorr = Math.random() > 0.15; 
-                                }
+                                phase = 1; notiType = groupType;
+                                if(groupType === 'Lover') { rt = 4500 + noise; isCorr = Math.random() > 0.25; } 
+                                else { rt = 2000 + noise; isCorr = Math.random() > 0.10; }
                             } else {
-                                phase = 0;
-                                notiType = 'None';
-                                rt = Math.floor(1200 + (Math.random() * 600 - 300)); 
+                                phase = 0; notiType = 'None';
+                                // 💡 12~15번 잔여 효과 가설 적용
+                                if (t >= 12 && t <= 15) {
+                                    if(groupType === 'Lover') rt = 2800 + noise; // 멍때림 유지
+                                    else rt = 1100 + noise; // 금방 회복
+                                } else {
+                                    rt = 1000 + noise;
+                                }
                                 isCorr = Math.random() > 0.05; 
                             }
 
                             mockTrials.push({
-                                participant_id: pId,
-                                exp_number: `TEST_${expNum}`,
-                                lover_name: 'Mock_Lover',
-                                ad_name: 'Mock_Ad',
-                                notification_type: notiType,
-                                notification_sender: 'Mock_Sender',
-                                trial_number: t,
-                                notification_phase: phase,
-                                reaction_time_ms: rt,
-                                is_correct: isCorr,
-                                created_at: new Date(baseTime + (i * 20 + t) * 5000).toISOString()
+                                participant_id: `TEST_${expNum}`, exp_number: `TEST_${expNum}`, lover_name: 'Mock_Lover', ad_name: '카카오이모티콘',
+                                notification_type: notiType, notification_sender: 'Mock_Sender', trial_number: t, notification_phase: phase,
+                                reaction_time_ms: rt, is_correct: isCorr, device_os: randomOS, created_at: new Date(baseTime + (i * 20 + t) * 5000).toISOString()
                             });
                         }
                     }
 
                     try {
-                        for(let i=0; i<mockTrials.length; i+=100) {
-                            const batch = mockTrials.slice(i, i+100);
-                            const { error } = await db.from('Trials').insert(batch);
-                            if(error) throw error;
-                        }
-                        showModal({ title: '성공', desc: '✅ 가짜 데이터 600건이 성공적으로 생성되었습니다!' });
-                        loadData(); 
-                    } catch(err) {
-                        showModal({ title: '오류', desc: '❌ 데이터 생성 중 오류 발생: ' + err.message });
-                    } finally {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
+                        for(let i=0; i<mockTrials.length; i+=100) { await db.from('Trials').insert(mockTrials.slice(i, i+100)); }
+                        showModal({ title: '성공', desc: '✅ 완벽한 통제 조건의 가짜 데이터 600건이 생성되었습니다!' }); loadData(); 
+                    } catch(err) { showModal({ title: '오류', desc: '❌ 생성 실패: ' + err.message }); } 
+                    finally { btn.innerHTML = originalText; btn.disabled = false; }
                 }
             });
         });
 
-        // 초기 실행
         loadData();
     </script>
 </body>
