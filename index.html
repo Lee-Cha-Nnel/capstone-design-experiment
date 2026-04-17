@@ -68,17 +68,17 @@
         /* 🤖 안드로이드 스타일 (기존 짙은 회색) */
         .style-android {
             width: 92%; max-width: 420px;
-            background-color: #8F8F8F;
+            background-color: #F5F5F5; /* 💡 수정됨: iOS와 동일한 밝은 톤으로 통일 */
             border-radius: 9999px; 
             padding: 6px 14px 6px 8px; 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); /* 밝은 테마에 맞춰 그림자 조정 */
+            border: 1px solid rgba(0, 0, 0, 0.05); 
         }
 
         /* 🍎 아이폰 스타일 (라이트 글래스모피즘) */
         .style-ios {
             width: 95%; max-width: 420px;
-            background-color: rgba(240, 240, 240, 0.8);
+            background-color: rgba(245, 245, 245, 0.8); /* 💡 수정됨: 안드로이드와 기본 베이스 색상 일치 */
             -webkit-backdrop-filter: blur(25px) saturate(200%);
             backdrop-filter: blur(25px) saturate(200%);
             border-radius: 26px; 
@@ -396,14 +396,15 @@
                 notiEl.className = 'modern-pill-notification anim-android style-android';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
-                        <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center">
+                        <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center border border-gray-200">
                             ${noti.iconHtml}
                         </div>
                         <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
-                            <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
-                            <span class="text-[13px] text-white truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                            <!-- 💡 수정됨: 밝은 배경에 맞춰 텍스트를 모두 어두운 색(text-gray-900, 800)으로 통일 -->
+                            <span class="text-[13px] font-bold text-gray-900 tracking-tight">${noti.title}</span>
+                            <span class="text-[13px] text-gray-800 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
-                        <svg class="w-3.5 h-3.5 text-white opacity-70 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 text-gray-400 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
