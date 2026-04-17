@@ -223,10 +223,10 @@
             notiDuration: 4000            
         };
         
-        // 🌟 이미지 경로 변수에 관계성(Lover) 프로필 이미지 추가
+        // 🌟 이미지 경로 설정 (광고 프사, 관계성 프사)
         const IMAGE_URLS = {
             adProfile: './ad_profile.jpg',
-            loverProfile: './kakaotalk_profile.png' // 💡 추가됨
+            loverProfile: './kakaotalk_profile.png' 
         };
 
         function preloadImages() {
@@ -258,7 +258,7 @@
         }
 
         window.onload = () => {
-            preloadImages(); // 🌟 이미지 미리 불러오기 함수도 다시 실행!
+            preloadImages(); 
             userDeviceType = detectDevice();
             updateOsStatusText();
         };
@@ -303,7 +303,7 @@
         // 🌟 아이콘 설정 (광고 프사, 지인 프사, 우측 뱃지)
         const ICONS = {
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
-            kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`, // 💡 기존 SVG에서 이미지로 교체
+            kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`,
             kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
         };
 
@@ -370,7 +370,7 @@
             const isIOS = userDeviceType.includes('iOS'); // 아이폰인지 확인
 
             if (isIOS) {
-                // 🍎 아이폰(iOS) 스타일 렌더링 (캡처본 완벽 적용)
+                // 🍎 아이폰(iOS) 스타일 렌더링
                 notiEl.className = 'modern-pill-notification anim-ios style-ios';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
@@ -392,12 +392,11 @@
                     </div>
                 `;
             } else {
-                // 🤖 안드로이드 스타일 렌더링 (기존 헤즈업 형태)
+                // 🤖 안드로이드 스타일 렌더링
                 notiEl.className = 'modern-pill-notification anim-android style-android';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
-                        <!-- 🌟 수정됨: w-[28px] h-[28px]로 살짝 키우고, rounded-[9px]로 모서리가 둥근 사각형 구현 -->
-                        <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center border border-white/10">
+                        <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center">
                             ${noti.iconHtml}
                         </div>
                         <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
@@ -434,13 +433,13 @@
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
-            // 그룹별 알림 텍스트 및 데이터 세팅 (UI 구성은 위 함수에서 처리됨)
+            // 그룹별 알림 텍스트 및 데이터 세팅
             dynamicNotifications = {
                 'Lover': { 
                     type: 'Lover', 
                     sender: loverName, 
-                    iconHtml: ICONS.kakaoLover, // 💡 교체한 이미지 삽입
-                    iconBg: 'bg-white',         // 💡 이미지가 깔끔하게 들어가도록 흰색 배경으로 통일
+                    iconHtml: ICONS.kakaoLover,
+                    iconBg: 'bg-white', 
                     title: loverName, 
                     msg: `머하고 잇어?` 
                 },
