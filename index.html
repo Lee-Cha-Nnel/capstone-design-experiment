@@ -374,11 +374,11 @@
                 notiEl.className = 'modern-pill-notification anim-ios style-ios';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
-                        <div class="relative w-[54px] h-[54px] flex-shrink-0">
+                        <div class="relative w-[44px] h-[44px] flex-shrink-0">
                             <div class="w-full h-full rounded-full ${noti.iconBg} overflow-hidden flex items-center justify-center border border-gray-100/50">
                                 ${noti.iconHtml}
                             </div>
-                            <div class="absolute -bottom-0.5 -right-0.5 w-[20px] h-[20px] bg-[#FEE500] rounded-[7px] flex items-center justify-center border-[2px] border-white/80 shadow-sm">
+                            <div class="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] bg-[#FEE500] rounded-[6px] flex items-center justify-center border-[2px] border-white/80 shadow-sm">
                                ${ICONS.kakaoBadge}
                             </div>
                         </div>
@@ -396,10 +396,11 @@
                 notiEl.className = 'modern-pill-notification anim-android style-android';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
-                        <div class="w-[24px] h-[24px] rounded-full flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center">
+                        <!-- 🌟 수정됨: w-[28px] h-[28px]로 살짝 키우고, rounded-[9px]로 모서리가 둥근 사각형 구현 -->
+                        <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center border border-white/10">
                             ${noti.iconHtml}
                         </div>
-                        <div class="ml-2 flex-1 overflow-hidden whitespace-nowrap flex items-center">
+                        <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
                             <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
                             <span class="text-[13px] text-white truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
