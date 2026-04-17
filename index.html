@@ -223,9 +223,10 @@
             notiDuration: 4000            
         };
         
-        // 🌟 실수로 지워졌던 이미지 경로 변수를 다시 복구합니다!
+        // 🌟 이미지 경로 변수에 관계성(Lover) 프로필 이미지 추가
         const IMAGE_URLS = {
-            adProfile: './ad_profile.jpg' 
+            adProfile: './ad_profile.jpg',
+            loverProfile: './kakaotalk_profile.png' // 💡 추가됨
         };
 
         function preloadImages() {
@@ -299,10 +300,10 @@
         });
 
 
-        // 🌟 아이콘 설정 (카카오 기본 프사, 이모티콘, 우측 뱃지)
+        // 🌟 아이콘 설정 (광고 프사, 지인 프사, 우측 뱃지)
         const ICONS = {
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
-            kakaoDefault: `<svg class="w-2/3 h-2/3 text-white mt-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`,
+            kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`, // 💡 기존 SVG에서 이미지로 교체
             kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
         };
 
@@ -400,9 +401,9 @@
                         </div>
                         <div class="ml-2 flex-1 overflow-hidden whitespace-nowrap flex items-center">
                             <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
-                            <span class="text-[13px] text-gray-300 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                            <span class="text-[13px] text-white truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
-                        <svg class="w-3.5 h-3.5 text-gray-500 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 text-white opacity-70 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
@@ -437,8 +438,8 @@
                 'Lover': { 
                     type: 'Lover', 
                     sender: loverName, 
-                    iconHtml: ICONS.kakaoDefault, 
-                    iconBg: 'bg-[#9BA5B1]', // 회색 배경
+                    iconHtml: ICONS.kakaoLover, // 💡 교체한 이미지 삽입
+                    iconBg: 'bg-white',         // 💡 이미지가 깔끔하게 들어가도록 흰색 배경으로 통일
                     title: loverName, 
                     msg: `머하고 잇어?` 
                 },
@@ -446,7 +447,7 @@
                     type: 'Ad', 
                     sender: adName, 
                     iconHtml: ICONS.kakaoAd, 
-                    iconBg: 'bg-white', // 💡 이미지가 깔끔하게 들어가도록 흰색 배경으로 변경
+                    iconBg: 'bg-white', 
                     title: adName, 
                     msg: `(광고) 오늘은 이모티콘 무료로 받는날!`
                 }
