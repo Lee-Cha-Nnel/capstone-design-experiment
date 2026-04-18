@@ -2,538 +2,628 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>인지 실험 데이터 대시보드 (Admin)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="인지 실험">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>알림 방해 인지 실험 (실행 화면)</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f3f4f6; }
-        .target-row { background-color: #fef9c3 !important; } 
-        .target-row:hover { background-color: #fef08a !important; }
-        .tap-effect:active { transform: scale(0.95); }
         
-        /* 스크롤바 디자인 */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: #ffffff !important; 
+            color: #1f2937; 
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #ffffff; 
+        }
+        .screen.active { display: flex; }
+
+        .math-text {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            user-select: none;
+            text-align: center;
+        }
+
+        /* 📱 알림 배너 공통 및 OS별 애니메이션 */
+        .modern-pill-notification {
+            position: absolute;
+            top: 0; 
+            left: 50%;
+            transform: translate(-50%, -150px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .modern-pill-notification.anim-android { transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .modern-pill-notification.anim-ios { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15); }
+        .modern-pill-notification.show { transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); }
+
+        /* 🤖 안드로이드 스타일 (밝은 회색 통일) */
+        .style-android {
+            width: 92%; max-width: 420px;
+            background-color: #F5F5F5;
+            border-radius: 9999px; 
+            padding: 6px 14px 6px 8px; 
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+        }
+
+        /* 🍎 아이폰 스타일 (라이트 글래스모피즘) */
+        .style-ios {
+            width: 95%; max-width: 420px;
+            background-color: rgba(245, 245, 245, 0.8);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            backdrop-filter: blur(25px) saturate(200%);
+            border-radius: 26px; 
+            padding: 10px 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 0.5px solid rgba(255, 255, 255, 0.5); 
+        }
+
+        .tap-effect:active {
+            opacity: 0.7;
+            transform: scale(0.96);
+        }
+        
+        .color-btn { 
+            transition: transform 0.1s, background-color 0.2s; 
+            font-size: 2.5rem !important; 
+        }
+        .color-btn:active { transform: scale(0.92); }
+
+        .custom-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .custom-input:focus {
+            outline: none;
+            border-color: #4B7DD1;
+            box-shadow: 0 0 0 1px #4B7DD1;
+            background-color: #ffffff;
+        }
+        .custom-input::placeholder { color: #9ca3af; }
     </style>
 </head>
-<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+<body>
 
-    <!-- 커스텀 모달(팝업) UI -->
-    <div id="custom-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[99999] backdrop-blur-sm transition-opacity">
-        <div class="bg-white p-7 rounded-2xl shadow-2xl max-w-sm w-full mx-4 transform transition-all">
-            <h3 id="modal-title" class="text-xl font-extrabold text-gray-800 mb-2">타이틀</h3>
-            <p id="modal-desc" class="text-[15px] text-gray-600 mb-6 leading-relaxed">내용</p>
-            <div id="modal-input-container" class="hidden mb-6">
-                <input type="text" id="modal-input" class="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="입력하세요">
+    <!-- 1. 알림 팝업 UI -->
+    <div id="notification" class="modern-pill-notification"></div>
+
+    <!-- 2. 시작 화면 -->
+    <div id="screen-intro" class="screen active p-6 overflow-y-auto">
+        <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
+            <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4">실험 검사</h1>
+            <p class="text-gray-500 mb-4 text-center text-[14px] leading-relaxed">
+                화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
+                하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
+            </p>
+
+            <!-- 🛠️ 테스트용 OS 강제 선택 패널 -->
+            <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
+                <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
+                <div class="flex gap-2 justify-center">
+                    <button id="btn-os-auto" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600">자동 감지</button>
+                    <button id="btn-os-ios" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">아이폰</button>
+                    <button id="btn-os-android" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">안드로이드</button>
+                </div>
+                <p class="text-center text-[10px] text-blue-600/70 mt-2.5 font-medium">현재 적용된 상태: <strong id="current-os-span" class="text-blue-800 font-mono"></strong></p>
             </div>
-            <div class="flex gap-3 justify-end">
-                <button id="modal-btn-cancel" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors">취소</button>
-                <button id="modal-btn-confirm" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-md">확인</button>
+            
+            <div class="w-full bg-gray-50 p-5 rounded-2xl mb-8 border border-gray-200 shadow-sm">
+                <p class="text-center mb-5">
+                    <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 실험용으로만 쓰이며 즉시 파기됩니다.)</span>
+                </p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="exp-number" class="block text-[12.5px] font-medium text-gray-600 mb-1.5 ml-1">1. 실험번호 (연구자 안내)</label>
+                        <input type="text" id="exp-number" class="custom-input py-3.5" placeholder="예: 1000">
+                    </div>
+                    <div>
+                        <label for="lover-name" class="block text-[12.5px] font-medium text-gray-600 mb-1.5 ml-1">2. 가장 자주 카톡을 하는 지인/애인</label>
+                        <input type="text" id="lover-name" class="custom-input py-3.5" placeholder="예: 우리공주, 김철수">
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-start" class="tap-effect w-full py-4 bg-gray-800 text-white font-bold rounded-2xl text-xl shadow-md flex-shrink-0">
+                실험 시작
+            </button>
+            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-400 underline tap-effect flex-shrink-0">
+                전체화면으로 전환
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. 대기 화면 -->
+    <div id="screen-fixation" class="screen justify-center items-center">
+        <div class="text-5xl text-gray-400 font-light">+</div>
+    </div>
+
+    <!-- 4. 본 실험 화면 -->
+    <div id="screen-task" class="screen">
+        <div class="pt-12 px-6 flex justify-between items-center z-10">
+            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div id="progress-bar" class="bg-gray-600 h-1.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <span class="text-xs text-gray-500 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center relative">
+            <div id="target-equation" class="math-text text-gray-800"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 p-5 pb-10">
+            <button id="ans-btn-0" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200"></button>
+            <button id="ans-btn-1" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200"></button>
+            <button id="ans-btn-2" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200"></button>
+            <button id="ans-btn-3" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200"></button>
+        </div>
+    </div>
+
+    <!-- 5. 결과 화면 -->
+    <div id="screen-result" class="screen p-6">
+        <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
+            <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">✓</div>
+            <h2 class="text-3xl font-bold mb-3 text-gray-800">실험 종료</h2>
+            <p class="text-gray-500 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
+            
+            <div class="w-full space-y-4">
+                <button id="btn-download-local" class="tap-effect w-full py-4 bg-gray-800 text-white font-bold rounded-2xl text-lg shadow-md">
+                    내 기록 다운로드 (CSV)
+                </button>
+                <button id="btn-restart" class="tap-effect w-full py-4 bg-white text-gray-800 font-bold rounded-2xl text-lg border border-gray-300 shadow-sm">
+                    다시 하기
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 1. 상단 네비게이션 바 -->
-    <header class="bg-white border-b border-gray-200 px-6 py-4 flex flex-col xl:flex-row justify-between items-center shrink-0 shadow-sm z-10 gap-4">
-        <div>
-            <h1 class="text-2xl font-extrabold text-gray-800 tracking-tight">📊 인지 실험 데이터 대시보드</h1>
-            <p class="text-sm text-gray-500 mt-1">알림 방해 효과 (관계성 vs 광고성) 실시간 모니터링</p>
-        </div>
-        
-        <div class="flex items-center gap-4 flex-wrap justify-center">
-            <!-- 뷰 전환 탭 (대시보드 vs 전체 표) -->
-            <div class="bg-gray-100 p-1.5 rounded-xl flex text-sm font-bold border border-gray-200 shadow-inner">
-                <button id="view-dashboard" class="px-4 py-2 bg-white text-gray-800 rounded-lg shadow-sm transition-all">종합 대시보드</button>
-                <button id="view-table" class="px-4 py-2 text-gray-500 hover:text-gray-800 rounded-lg transition-all">전체 표 보기</button>
-            </div>
-            
-            <div class="h-8 w-px bg-gray-300 hidden xl:block"></div>
-            
-            <!-- 우측 액션 버튼들 -->
-            <div class="flex space-x-2">
-                <button id="btn-refresh" class="tap-effect px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-bold transition-colors shadow-sm" title="새로고침">
-                    🔄 새로고침
-                </button>
-                <button id="btn-download" class="tap-effect px-4 py-2 bg-[#4B7DD1] text-white rounded-lg hover:bg-blue-700 font-bold transition-colors shadow-md">
-                    ⬇ CSV
-                </button>
-                <button id="btn-generate-mock" class="tap-effect px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold transition-colors shadow-md">
-                    🧪 가짜 데이터
-                </button>
-                <button id="btn-delete-all" class="tap-effect px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold transition-colors shadow-md" title="전체 삭제">
-                    🗑️ 초기화
-                </button>
-                <button onclick="location.href='index.html'" class="tap-effect px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-bold transition-colors shadow-md">
-                    🏠 메인으로
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- 2. 메인 컨텐츠 영역 -->
-    <main class="flex-1 overflow-hidden p-6 lg:p-8 flex flex-col gap-6">
-        
-        <!-- 요약 위젯 카드 -->
-        <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0 transition-all">
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold mb-1">총 누적 데이터 (Trials)</div>
-                <div class="text-3xl font-black text-gray-800" id="stat-total">0</div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold mb-1">전체 평균 정답률</div>
-                <div class="text-3xl font-black text-[#187A1E]" id="stat-accuracy">0%</div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex justify-between items-center">
-                <div>
-                    <div class="text-sm text-gray-500 font-semibold mb-1">평상시 평균 반응속도 (Baseline)</div>
-                    <div class="text-3xl font-bold text-gray-800"><span id="stat-baseline-rt">0</span> <span class="text-base font-normal text-gray-500">ms</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 하단: 그래프 & 데이터 테이블 영역 -->
-        <div class="flex flex-col xl:flex-row gap-6 flex-1 min-h-0">
-            
-            <!-- 🌟 실시간 그래프 패널 (1단계 + 2단계 세로 배치) -->
-            <div id="chart-section" class="w-full xl:w-1/3 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col shrink-0 overflow-y-auto transition-all duration-300 gap-8">
-                
-                <!-- [1단계] 선그래프: 잔여 효과 -->
-                <div>
-                    <h3 class="text-base font-bold text-gray-800 mb-1">💡 1단계: 알림 전후 회복 시간 (잔여 효과)</h3>
-                    <p class="text-[11px] text-gray-500 mb-3">Pre(7~10번 평균) vs Post(12~15번 평균)</p>
-                    <div class="relative w-full h-[180px]">
-                        <canvas id="lineChart"></canvas>
-                    </div>
-                    <div id="insight-box-1" class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 leading-relaxed font-medium">
-                        데이터 대기 중...
-                    </div>
-                </div>
-
-                <hr class="border-gray-100">
-
-                <!-- [2단계] 막대그래프: 타겟 충격량 -->
-                <div>
-                    <h3 class="text-base font-bold text-gray-800 mb-1">💡 2단계: 그룹 간 타겟 알림 충격량</h3>
-                    <p class="text-[11px] text-gray-500 mb-3">11번 문항(알림 발생 시점) 평균 비교</p>
-                    <div class="relative w-full h-[180px]">
-                        <canvas id="barChart"></canvas>
-                    </div>
-                    <div id="insight-box-2" class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 leading-relaxed font-medium">
-                        데이터 대기 중...
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- 데이터 테이블 영역 -->
-            <div id="table-section" class="w-full xl:w-2/3 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden transition-all duration-300">
-                
-                <!-- 필터 탭 -->
-                <div class="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-gray-50/50 shrink-0">
-                    <div class="flex space-x-2" id="filter-tabs">
-                        <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-bold bg-gray-800 text-white shadow-sm" data-filter="All">전체 데이터</button>
-                        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50" data-filter="Lover">❤️ 관계성 (지인)</button>
-                        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50" data-filter="Ad">🛍️ 광고성 (쇼핑몰)</button>
-                    </div>
-                    <div class="text-xs font-semibold text-yellow-600 bg-yellow-100 px-3 py-1.5 rounded-full border border-yellow-200 hidden sm:block">
-                        💡 노란색 줄은 알림이 발생한 11번 문제입니다.
-                    </div>
-                </div>
-
-                <!-- 테이블 스크롤 컨테이너 -->
-                <div class="flex-1 overflow-y-auto relative">
-                    <table class="w-full text-left text-sm text-gray-600 whitespace-nowrap">
-                        <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm">
-                            <tr>
-                                <th class="py-3 px-4 font-bold">참여자 ID</th>
-                                <th class="py-3 px-4 font-bold">그룹 (Type)</th>
-                                <th class="py-3 px-4 font-bold">기기 (OS)</th>
-                                <th class="py-3 px-4 font-bold">진행</th>
-                                <th class="py-3 px-4 font-bold">알림 여부</th>
-                                <th class="py-3 px-4 font-bold text-right">반응시간 (RT)</th>
-                                <th class="py-3 px-4 font-bold text-center">정답</th>
-                                <th class="py-3 px-4 font-bold">참여 일시</th>
-                                <th class="py-3 px-4 font-bold text-center">관리</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-gray-200">
-                            <tr><td colspan="9" class="text-center py-12 text-gray-400">데이터를 불러오는 중입니다...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
     <script>
-        // ==========================================
-        // 1. Supabase 연동 및 초기 변수
-        // ==========================================
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let rawData = [];
-        let currentFilter = 'All';
-        let lineChart = null;
-        let barChart = null;
-
-        // ==========================================
-        // 2. 커스텀 모달(팝업) 시스템
-        // ==========================================
-        function showModal({ title, desc, type = 'alert', confirmText = '확인', confirmColor = 'bg-blue-600', onConfirm }) {
-            const modal = document.getElementById('custom-modal');
-            const titleEl = document.getElementById('modal-title');
-            const descEl = document.getElementById('modal-desc');
-            const inputContainer = document.getElementById('modal-input-container');
-            const inputEl = document.getElementById('modal-input');
-            const btnCancel = document.getElementById('modal-btn-cancel');
-            const btnConfirm = document.getElementById('modal-btn-confirm');
-
-            titleEl.innerHTML = title;
-            descEl.innerHTML = desc;
-            inputEl.value = '';
-            
-            btnConfirm.className = `px-5 py-2.5 text-white rounded-xl font-bold transition-colors shadow-md ${confirmColor} hover:opacity-90`;
-            btnConfirm.textContent = confirmText;
-
-            inputContainer.classList.toggle('hidden', type !== 'prompt');
-            btnCancel.classList.toggle('hidden', type === 'alert');
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            const close = () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                btnConfirm.onclick = null;
-                btnCancel.onclick = null;
-            };
-
-            btnCancel.onclick = close;
-            btnConfirm.onclick = () => {
-                const val = inputEl.value;
-                close();
-                if (onConfirm) onConfirm(val);
-            };
-        }
-
-        // ==========================================
-        // 3. 뷰 전환 제어
-        // ==========================================
-        const btnViewDash = document.getElementById('view-dashboard');
-        const btnViewTable = document.getElementById('view-table');
-        const chartSection = document.getElementById('chart-section');
-        const tableSection = document.getElementById('table-section');
-
-        btnViewDash.addEventListener('click', () => {
-            btnViewDash.className = 'px-4 py-2 bg-white text-gray-800 rounded-lg shadow-sm transition-all';
-            btnViewTable.className = 'px-4 py-2 text-gray-500 hover:text-gray-800 rounded-lg transition-all';
-            chartSection.style.display = 'flex'; 
-            tableSection.classList.replace('xl:w-full', 'xl:w-2/3'); 
-        });
-
-        btnViewTable.addEventListener('click', () => {
-            btnViewTable.className = 'px-4 py-2 bg-white text-gray-800 rounded-lg shadow-sm transition-all';
-            btnViewDash.className = 'px-4 py-2 text-gray-500 hover:text-gray-800 rounded-lg transition-all';
-            chartSection.style.display = 'none'; 
-            tableSection.classList.replace('xl:w-2/3', 'xl:w-full'); 
-        });
-
-        // ==========================================
-        // 4. 차트 초기화
-        // ==========================================
-        Chart.defaults.font.family = "'Pretendard', sans-serif";
+        const CONFIG = {
+            totalTrials: 20,             
+            fixationTime: 600,            
+            notiDuration: 4000            
+        };
         
-        function initCharts() {
-            lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['Pre (7~10번)', 'Post (12~15번)'],
-                    datasets: [
-                        { label: '관계성', data: [0, 0], borderColor: '#e11d48', backgroundColor: '#e11d48', tension: 0.1, borderWidth: 2, pointRadius: 4 },
-                        { label: '광고성', data: [0, 0], borderColor: '#4B7DD1', backgroundColor: '#4B7DD1', tension: 0.1, borderWidth: 2, pointRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: {size: 10} } } }, scales: { y: { beginAtZero: false, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 10} } } } }
-            });
+        // 🌟 이미지 경로 설정 (광고 프사, 관계성 프사)
+        const IMAGE_URLS = {
+            adProfile: './ad_profile.jpg',
+            loverProfile: './kakaotalk_profile.png' 
+        };
 
-            barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['관계성 (Lover)', '광고성 (Ad)'],
-                    datasets: [{
-                        label: '11번 문항 평균 반응시간 (ms)',
-                        data: [0, 0], backgroundColor: ['#e11d48', '#4B7DD1'], borderRadius: 4, barPercentage: 0.5
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 11, weight:'bold'} } } } }
+        function preloadImages() {
+            Object.values(IMAGE_URLS).forEach(url => {
+                const img = new Image(); img.src = url;
             });
         }
-        initCharts();
 
-        function getGroupAvg(data, targetGroup, trialArray) {
-            const fData = data.filter(d => {
-                let num = d.exp_number ? parseInt(d.exp_number.match(/\d+/)?.[0] || "1", 10) : 1;
-                let g = (num % 2 === 0) ? 'Lover' : 'Ad';
-                return g === targetGroup && trialArray.includes(d.trial_number);
-            });
-            if(fData.length === 0) return 0;
-            return Math.round(fData.reduce((sum, d) => sum + d.reaction_time_ms, 0) / fData.length);
-        }
+        let userDeviceType = "Unknown";
+        let presenceChannel = null; // 🌟 실시간 접속자 채널 변수 추가
 
-        // ==========================================
-        // 5. 데이터 로드 및 통계 계산
-        // ==========================================
-        async function loadData() {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-12 text-gray-400 font-bold">데이터를 로드하는 중...</td></tr>';
-            
-            const { data, error } = await db.from('Trials').select('*').order('created_at', { ascending: false });
-            if (error) { tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-red-500">DB 오류: ${error.message}</td></tr>`; return; }
-            rawData = data;
-            
-            // 💡 화면 렌더링용으로 넣어뒀던 1000번 가짜 데이터 로직 삭제!
-            
-            updateDashboard();
-        }
-
-        function updateDashboard() {
-            const total = rawData.length;
-            const accuracy = total > 0 ? Math.round((rawData.filter(d => d.is_correct === 1 || d.is_correct === true).length / total) * 100) : 0;
-            const baselines = rawData.filter(d => d.notification_phase === 0);
-            const avgBaseline = baselines.length > 0 ? Math.round(baselines.reduce((acc, cur) => acc + cur.reaction_time_ms, 0) / baselines.length) : 0;
-
-            document.getElementById('stat-total').textContent = total.toLocaleString();
-            document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
-            document.getElementById('stat-baseline-rt').textContent = avgBaseline.toLocaleString();
-
-            const preLover = getGroupAvg(rawData, 'Lover', [7, 8, 9, 10]);
-            const postLover = getGroupAvg(rawData, 'Lover', [12, 13, 14, 15]);
-            const preAd = getGroupAvg(rawData, 'Ad', [7, 8, 9, 10]);
-            const postAd = getGroupAvg(rawData, 'Ad', [12, 13, 14, 15]);
-
-            lineChart.data.datasets[0].data = [preLover, postLover];
-            lineChart.data.datasets[1].data = [preAd, postAd];
-            lineChart.update();
-
-            const box1 = document.getElementById('insight-box-1');
-            if (preLover > 0 && postLover > 0) {
-                const loverDelay = postLover - preLover;
-                if (loverDelay > 0) {
-                    box1.innerHTML = `<span class="text-base">✅</span> 관계성 그룹은 알림 직후 평소보다 <b><span class="text-red-600">${loverDelay}ms</span></b> 느리게 회복 중입니다.`;
-                    box1.className = "mt-3 p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-900 font-medium";
-                } else {
-                    box1.innerHTML = `현재 뚜렷한 잔여 효과가 관찰되지 않습니다.`;
-                    box1.className = "mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 font-medium";
+        // 💡 접속 기종(OS) 판별 함수
+        function detectDevice() {
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
+                return 'iOS_Apple';
+            } else if (ua.indexOf('android') > -1) {
+                if (ua.indexOf('samsungbrowser') > -1 || ua.indexOf('sm-') > -1) {
+                    return 'Android_Samsung';
                 }
+                return 'Android_Other';
+            } else {
+                return 'PC_or_Unknown';
             }
-
-            const targetLover = getGroupAvg(rawData, 'Lover', [11]);
-            const targetAd = getGroupAvg(rawData, 'Ad', [11]);
-
-            barChart.data.datasets[0].data = [targetLover, targetAd];
-            barChart.update();
-
-            const box2 = document.getElementById('insight-box-2');
-            if (targetLover > 0 && targetAd > 0) {
-                const diff = Math.abs(targetLover - targetAd);
-                if (targetLover > targetAd) {
-                    box2.innerHTML = `<span class="text-base">✅</span> 관계성 그룹이 광고성보다 <b><span class="text-red-600">${diff}ms</span></b> 더 크게 방해받았습니다.`;
-                    box2.className = "mt-3 p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-900 font-medium";
-                } else {
-                    box2.innerHTML = `두 그룹 간 타겟 반응속도 차이가 없습니다.`;
-                    box2.className = "mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 font-medium";
-                }
-            }
-
-            renderTable();
         }
 
-        // ==========================================
-        // 6. 테이블 렌더링
-        // ==========================================
-        function renderTable() {
-            const tbody = document.getElementById('table-body');
-            let filteredData = rawData;
-            if (currentFilter !== 'All') {
-                filteredData = rawData.filter(row => {
-                    let num = row.exp_number ? parseInt(row.exp_number.match(/\d+/)?.[0] || "1", 10) : 1;
-                    let type = (num % 2 === 0) ? 'Lover' : 'Ad';
-                    return type === currentFilter;
-                });
-            }
-
-            if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-12 text-gray-400">해당 조건의 데이터가 없습니다.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filteredData.map(row => {
-                const dateObj = new Date(row.created_at);
-                const timeString = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-                
-                const expNumText = row.exp_number || 'N/A';
-                let num = expNumText.match(/\d+/) ? parseInt(expNumText.match(/\d+/)[0], 10) : 1;
-                let groupType = (num % 2 === 0) ? '관계성' : '광고성';
-                let groupColor = (groupType === '관계성') ? 'text-pink-600 bg-pink-50' : 'text-blue-600 bg-blue-50';
-                
-                const osText = row.device_os || 'Unknown';
-                const isTarget = row.notification_phase === 1;
-                const rowClass = isTarget ? 'target-row font-semibold' : 'hover:bg-gray-50 transition-colors';
-
-                return `
-                    <tr class="${rowClass} border-b border-gray-100">
-                        <td class="py-3 px-4 text-gray-800">${expNumText}</td>
-                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-md text-xs font-bold ${groupColor}">${groupType}</span></td>
-                        <td class="py-3 px-4 text-gray-500 font-mono text-xs">${osText}</td>
-                        <td class="py-3 px-4">${row.trial_number} / 20</td>
-                        <td class="py-3 px-4">${isTarget ? '📢 알림 O' : '<span class="text-gray-400">-</span>'}</td>
-                        <td class="py-3 px-4 font-mono text-right ${isTarget ? 'text-red-600' : 'text-gray-600'}">${row.reaction_time_ms.toLocaleString()}</td>
-                        <td class="py-3 px-4 text-center">${(row.is_correct === 1 || row.is_correct === true) ? '<span class="text-green-600 font-bold">O</span>' : '<span class="text-red-500 font-bold">X</span>'}</td>
-                        <td class="py-3 px-4 text-gray-400 text-xs">${timeString}</td>
-                        <td class="py-3 px-4 text-center">
-                            <!-- 💡 수정됨: id가 있으면 id로 지우고, 없으면 created_at을 전달 -->
-                            <button onclick="deleteRow('${row.id || ''}', '${row.created_at}')" class="text-gray-400 hover:text-red-500 transition-colors" title="이 기록 삭제하기">🗑️</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+        // 상태 업데이트 렌더링 함수
+        function updateOsStatusText() {
+            document.getElementById('current-os-span').innerText = userDeviceType;
         }
 
-        // ==========================================
-        // 7. 삭제 및 이벤트 로직 (💡 오류 알림 로직 강화)
-        // ==========================================
-        
-        // 💡 단일 행 삭제 함수 개선 (id 매칭, 에러 피드백 추가)
-        window.deleteRow = (rowId, createdAt) => {
-            const targetColumn = rowId ? 'id' : 'created_at';
-            const targetValue = rowId ? rowId : createdAt;
+        window.onload = () => {
+            preloadImages(); 
+            userDeviceType = detectDevice();
+            updateOsStatusText();
 
-            showModal({
-                title: '기록 삭제', desc: '이 참가자의 기록(1줄)을 삭제하시겠습니까?', type: 'confirm', confirmText: '삭제', confirmColor: 'bg-red-600',
-                onConfirm: async () => { 
-                    // select()를 붙여야 삭제된 결과를 반환받아 권한 문제를 확인할 수 있습니다.
-                    const { data, error } = await db.from('Trials').delete().eq(targetColumn, targetValue).select();
-                    
-                    if (error) {
-                        showModal({ title: '❌ 삭제 오류', desc: `알 수 없는 오류: ${error.message}` });
-                    } else if (data && data.length === 0) {
-                        // 에러는 안 났지만 지워진 데이터가 0개 = 권한이 막혀있음
-                        showModal({ 
-                            title: '🔒 삭제 실패 (권한 문제)', 
-                            desc: 'DB에서 삭제 권한이 차단되어 있습니다.<br><b>Supabase 설정에서 RLS 보안을 해제해주세요.</b>' 
-                        });
-                    } else {
-                        loadData(); // 성공 시 새로고침
-                    }
+            // 🌟 실시간 접속자 채널 입장 (피험자로 등록)
+            presenceChannel = db.channel('online-users');
+            presenceChannel.subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await presenceChannel.track({ 
+                        role: 'participant', 
+                        device: userDeviceType 
+                    });
                 }
             });
         };
 
-        // 💡 전체 초기화 함수 개선 (에러 피드백 추가)
-        document.getElementById('btn-delete-all').addEventListener('click', () => {
-            showModal({
-                title: '⚠️ 전체 데이터 초기화', desc: "경고: DB에 쌓인 모든 데이터가 영구 삭제됩니다.<br>정말 지우시려면 아래 창에 <strong>'삭제'</strong>라고 입력해주세요.", type: 'prompt', confirmText: '영구 삭제', confirmColor: 'bg-red-600',
-                onConfirm: async (val) => {
-                    if (val === '삭제') {
-                        const { data, error } = await db.from('Trials').delete().not('created_at', 'is', null).select();
-                        
-                        if (error) {
-                            showModal({ title: '❌ 삭제 오류', desc: `알 수 없는 오류: ${error.message}` });
-                        } else if (data && data.length === 0) {
-                            showModal({ 
-                                title: '🔒 삭제 실패 (권한 문제)', 
-                                desc: 'DB에서 삭제 권한이 차단되어 있습니다.<br><b>Supabase 설정에서 RLS 보안을 해제해주세요.</b>' 
-                            });
-                        } else {
-                            showModal({ title: '성공', desc: '✅ 모든 테스트 데이터가 초기화되었습니다.' }); 
-                            loadData(); 
-                        }
-                    }
-                }
+        // 🛠️ 테스트용 OS 강제 선택 버튼 로직
+        const btnOsAuto = document.getElementById('btn-os-auto');
+        const btnOsIos = document.getElementById('btn-os-ios');
+        const btnOsAndroid = document.getElementById('btn-os-android');
+
+        function resetOsButtons() {
+            [btnOsAuto, btnOsIos, btnOsAndroid].forEach(btn => {
+                btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50';
             });
+        }
+
+        function setOsButtonActive(btn) {
+            btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600';
+        }
+
+        btnOsAuto.addEventListener('click', () => {
+            resetOsButtons();
+            setOsButtonActive(btnOsAuto);
+            userDeviceType = detectDevice();
+            updateOsStatusText();
         });
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50');
-                e.target.className = 'filter-btn active px-4 py-2 rounded-lg text-sm font-bold bg-gray-800 text-white shadow-sm';
-                currentFilter = e.target.getAttribute('data-filter'); renderTable();
-            });
+        btnOsIos.addEventListener('click', () => {
+            resetOsButtons();
+            setOsButtonActive(btnOsIos);
+            userDeviceType = 'iOS_Apple'; // 아이폰 강제 설정
+            updateOsStatusText();
         });
 
-        document.getElementById('btn-refresh').addEventListener('click', loadData);
+        btnOsAndroid.addEventListener('click', () => {
+            resetOsButtons();
+            setOsButtonActive(btnOsAndroid);
+            userDeviceType = 'Android_Samsung'; // 안드로이드 강제 설정
+            updateOsStatusText();
+        });
+
+
+        // 🌟 아이콘 설정 (광고 프사, 지인 프사, 우측 뱃지)
+        const ICONS = {
+            kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
+            kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`,
+            kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
+        };
+
+        const TRIAL_SCENARIO = [
+            { eq: "15 + 23", ans: 38, choices: [48, 38, 27, 39], noti: "None" },
+            { eq: "14 × 3",  ans: 42, choices: [42, 32, 52, 45], noti: "None" },
+            { eq: "34 + 18", ans: 52, choices: [42, 62, 52, 53], noti: "None" },
+            { eq: "21 × 4",  ans: 84, choices: [74, 84, 94, 85], noti: "None" },
+            { eq: "45 + 27", ans: 72, choices: [62, 73, 82, 72], noti: "None" },
+            { eq: "13 × 6",  ans: 78, choices: [78, 68, 88, 79], noti: "None" },
+            { eq: "52 + 19", ans: 71, choices: [81, 71, 61, 72], noti: "None" },
+            { eq: "17 × 5",  ans: 85, choices: [75, 95, 85, 86], noti: "None" },
+            { eq: "28 + 35", ans: 63, choices: [63, 53, 73, 64], noti: "None" },
+            { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "None" },   
+            { eq: "41 + 22", ans: 63, choices: [53, 73, 63, 65], noti: "Target" }, // 11번 문제
+            { eq: "16 × 4",  ans: 64, choices: [64, 54, 74, 66], noti: "None" },
+            { eq: "37 + 16", ans: 53, choices: [63, 43, 54, 53], noti: "None" },
+            { eq: "18 × 3",  ans: 54, choices: [54, 64, 44, 56], noti: "None" },
+            { eq: "56 + 25", ans: 81, choices: [71, 81, 91, 83], noti: "None" },
+            { eq: "12 × 7",  ans: 84, choices: [94, 74, 84, 86], noti: "None" },
+            { eq: "29 + 44", ans: 73, choices: [73, 63, 83, 75], noti: "None" },
+            { eq: "23 × 5",  ans: 115, choices: [105, 125, 115, 117], noti: "None" },
+            { eq: "48 + 33", ans: 81, choices: [91, 81, 71, 83], noti: "None" },   
+            { eq: "19 × 6",  ans: 114, choices: [114, 104, 124, 116], noti: "None" }
+        ];
+
+        let currentTrial = 0;
+        let trialData = [];
+        let trialStartTime = 0;
         
-        document.getElementById('btn-download').addEventListener('click', () => {
-            if (rawData.length === 0) return showModal({ title: '알림', desc: '다운로드할 데이터가 없습니다.' });
-            const headers = ['Exp_Num', 'Group_Type', 'Device_OS', 'Trial', 'Is_Target(Noti)', 'Reaction_Time_ms', 'Correct(1=O)', 'Created_At']; 
+        let isNotiVisible = false;
+        let notiTimeout = null;
+
+        let expNum = "";
+        let loverName = "";
+        let adName = "카카오이모티콘"; 
+        let dynamicNotifications = {}; 
+
+        let currentEquation = "";
+        let currentCorrectAnswer = 0;
+
+        const screens = {
+            intro: document.getElementById('screen-intro'),
+            fixation: document.getElementById('screen-fixation'),
+            task: document.getElementById('screen-task'),
+            result: document.getElementById('screen-result')
+        };
+        const notiEl = document.getElementById('notification');
+        const ansBtns = [
+            document.getElementById('ans-btn-0'), document.getElementById('ans-btn-1'),
+            document.getElementById('ans-btn-2'), document.getElementById('ans-btn-3')
+        ];
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        // 🌟 핵심: 기종(OS)에 따라 알림 UI를 다르게 렌더링하는 로직
+        function showSpecificNotification(type) {
+            if (isNotiVisible || type === "None" || !dynamicNotifications[type]) return;
+            
+            const noti = dynamicNotifications[type];
+            const isIOS = userDeviceType.includes('iOS'); // 아이폰인지 확인
+
+            if (isIOS) {
+                // 🍎 아이폰(iOS) 스타일 렌더링
+                notiEl.className = 'modern-pill-notification anim-ios style-ios';
+                notiEl.innerHTML = `
+                    <div class="flex items-center w-full">
+                        <div class="relative w-[44px] h-[44px] flex-shrink-0">
+                            <div class="w-full h-full rounded-full ${noti.iconBg} overflow-hidden flex items-center justify-center border border-gray-100/50">
+                                ${noti.iconHtml}
+                            </div>
+                            <div class="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] bg-[#FEE500] rounded-[6px] flex items-center justify-center border-[2px] border-white/80 shadow-sm">
+                               ${ICONS.kakaoBadge}
+                            </div>
+                        </div>
+                        <div class="ml-3.5 flex-1 flex flex-col justify-center overflow-hidden">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="text-[15px] font-bold text-gray-900 tracking-tight leading-tight truncate pr-2">${noti.title}</span>
+                                <span class="text-[13px] text-gray-500 font-normal flex-shrink-0">지금</span>
+                            </div>
+                            <span class="text-[15px] text-gray-800 truncate font-normal tracking-tight leading-tight mt-1">${noti.msg}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 🤖 안드로이드 스타일 렌더링
+                notiEl.className = 'modern-pill-notification anim-android style-android';
+                notiEl.innerHTML = `
+                    <div class="flex items-center w-full">
+                        <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center border border-gray-200">
+                            ${noti.iconHtml}
+                        </div>
+                        <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
+                            <span class="text-[13px] font-bold text-gray-900 tracking-tight">${noti.title}</span>
+                            <span class="text-[13px] text-gray-800 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                        </div>
+                        <svg class="w-3.5 h-3.5 text-gray-400 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                `;
+            }
+            
+            notiEl.classList.add('show');
+            isNotiVisible = true;
+
+            if (notiTimeout) clearTimeout(notiTimeout);
+            notiTimeout = setTimeout(() => { hideNotification(); }, CONFIG.notiDuration);
+        }
+
+        function hideNotification() {
+            notiEl.classList.remove('show');
+            isNotiVisible = false;
+        }
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            expNum = document.getElementById('exp-number').value.trim();
+
+            if (expNum === '1111') {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
+            loverName = document.getElementById('lover-name').value.trim() || `김철수`;
+
+            // 그룹별 알림 텍스트 및 데이터 세팅
+            dynamicNotifications = {
+                'Lover': { 
+                    type: 'Lover', 
+                    sender: loverName, 
+                    iconHtml: ICONS.kakaoLover,
+                    iconBg: 'bg-white', 
+                    title: loverName, 
+                    msg: `머하고 잇어?` 
+                },
+                'Ad': { 
+                    type: 'Ad', 
+                    sender: adName, 
+                    iconHtml: ICONS.kakaoAd, 
+                    iconBg: 'bg-white', 
+                    title: adName, 
+                    msg: `(광고) 오늘은 이모티콘 무료로 받는날!`
+                }
+            };
+
+            currentTrial = 0;
+            trialData = [];
+            document.getElementById('progress-bar').style.width = '0%';
+            
+            hideNotification();
+            nextTrial();
+        });
+
+        function nextTrial() {
+            if (currentTrial >= CONFIG.totalTrials) {
+                endExperiment();
+                return;
+            }
+            currentTrial++;
+            document.getElementById('trial-counter').textContent = currentTrial;
+            document.getElementById('progress-bar').style.width = `${(currentTrial / CONFIG.totalTrials) * 100}%`;
+            
+            showScreen('fixation');
+            setTimeout(() => { presentStimulus(); }, CONFIG.fixationTime);
+        }
+
+        function presentStimulus() {
+            showScreen('task');
+            
+            const currentTrialData = TRIAL_SCENARIO[currentTrial - 1];
+            currentEquation = currentTrialData.eq;
+            currentCorrectAnswer = currentTrialData.ans;
+
+            document.getElementById('target-equation').textContent = currentEquation;
+
+            for(let i=0; i<4; i++) {
+                ansBtns[i].textContent = currentTrialData.choices[i];
+                ansBtns[i].setAttribute('data-value', currentTrialData.choices[i]); 
+            }
+
+            if (currentTrialData.noti !== "None") {
+                let numMatched = expNum.match(/\d+/);
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
+                let notiType = (num % 2 === 0) ? "Lover" : "Ad"; 
+
+                setTimeout(() => { 
+                    showSpecificNotification(notiType); 
+                }, 500); 
+            }
+
+            trialStartTime = performance.now();
+        }
+
+        ansBtns.forEach(btn => {
+            btn.addEventListener('touchstart', handleInput, {passive: false});
+            btn.addEventListener('mousedown', handleInput); 
+        });
+
+        function handleInput(e) {
+            if (screens.task.classList.contains('active') === false) return;
+            e.preventDefault(); 
+
+            const reactionTime = Math.round(performance.now() - trialStartTime);
+            const selectedValue = parseInt(e.currentTarget.getAttribute('data-value')); 
+            const isCorrect = (selectedValue === currentCorrectAnswer);
+
+            const currentTrialData = TRIAL_SCENARIO[currentTrial - 1];
+            let loggedNotiType = "None";
+            let loggedNotiSender = "None";
+            let phaseNum = 0; 
+
+            if (currentTrialData.noti !== "None") {
+                let numMatched = expNum.match(/\d+/);
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
+                
+                loggedNotiType = (num % 2 === 0) ? "Lover" : "Ad"; 
+                loggedNotiSender = dynamicNotifications[loggedNotiType] ? dynamicNotifications[loggedNotiType].sender : "None";
+                phaseNum = 1; 
+            }
+
+            trialData.push({
+                expNum: expNum, loverName: loverName, adName: adName,
+                trialNumber: currentTrial, equation: currentEquation,
+                correctAnswer: currentCorrectAnswer, chosenAnswer: selectedValue,
+                notificationType: loggedNotiType, 
+                notificationSender: loggedNotiSender,
+                isCorrect: isCorrect ? 1 : 0, reactionTimeMs: reactionTime,
+                deviceOS: userDeviceType 
+            });
+
+            if (db) {
+                db.from('Trials').insert([{ 
+                    participant_id: expNum,
+                    exp_number: expNum,
+                    lover_name: loverName,
+                    ad_name: adName,
+                    notification_type: loggedNotiType,
+                    notification_sender: loggedNotiSender,
+                    trial_number: currentTrial, 
+                    notification_phase: phaseNum, 
+                    reaction_time_ms: reactionTime,
+                    is_correct: isCorrect,
+                    device_os: userDeviceType 
+                }]).then(({ error }) => {
+                    if (error) console.error('DB 전송 에러:', error);
+                });
+            }
+
+            nextTrial();
+        }
+
+        function endExperiment() {
+            hideNotification();
+            showScreen('result');
+            
+            // 실험 종료 시 Presence 채널에서 퇴장
+            if (presenceChannel) {
+                presenceChannel.untrack();
+            }
+        }
+
+        notiEl.addEventListener('click', () => {
+            hideNotification();
+            if(notiTimeout) clearTimeout(notiTimeout);
+        });
+
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => { console.log(err); });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => { showScreen('intro'); });
+
+        document.getElementById('btn-download-local').addEventListener('click', () => {
+            if (trialData.length === 0) return;
+            
+            const headers = ['Exp_Num', 'Group_Type', 'Question', 'Equation', 'Correct_Answer', 'Chosen_Answer', 'Noti_Fired', 'Correct', 'Reaction_Time_ms', 'Device_OS'];
             const csvRows = [headers.join(',')];
-            rawData.forEach(row => {
-                let num = row.exp_number ? parseInt(row.exp_number.match(/\d+/)?.[0] || "1", 10) : 1;
+
+            trialData.forEach(row => {
+                let numMatched = row.expNum.match(/\d+/);
+                let num = numMatched ? parseInt(numMatched[0], 10) : 1;
                 let groupType = (num % 2 === 0) ? '관계성' : '광고성';
-                let isCorr = (row.is_correct === 1 || row.is_correct === true) ? 1 : 0;
-                const values = [row.exp_number, groupType, row.device_os || 'Unknown', row.trial_number, row.notification_phase, row.reaction_time_ms, isCorr, row.created_at];
+                let notiFired = (row.notificationType !== 'None') ? 'O' : 'X';
+
+                const values = [
+                    row.expNum, groupType, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, 
+                    notiFired, row.isCorrect, row.reactionTimeMs, row.deviceOS
+                ];
                 csvRows.push(values.join(','));
             });
-            const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-            link.download = `Total_DB_Backup_${new Date().getTime()}.csv`; link.click();
+
+            const csvContent = "\uFEFF" + csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `math_task_data_${expNum}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
-
-        document.getElementById('btn-generate-mock').addEventListener('click', () => {
-            showModal({
-                title: '🧪 가짜 데이터 생성', desc: '테스트용 피험자 30명의 데이터(총 600건)를 생성합니다.', type: 'confirm', confirmText: '데이터 생성', confirmColor: 'bg-purple-600',
-                onConfirm: async () => {
-                    const btn = document.getElementById('btn-generate-mock');
-                    const originalText = btn.innerHTML; btn.innerHTML = '⏳ 생성 중...'; btn.disabled = true;
-                    const mockTrials = []; const baseTime = new Date().getTime();
-
-                    for(let i=1; i<=30; i++) {
-                        const expNum = 1000 + i; 
-                        const groupType = (expNum % 2 === 0) ? 'Lover' : 'Ad'; 
-                        const randomOS = Math.random() > 0.5 ? 'iOS_Apple' : 'Android_Samsung';
-
-                        for(let t=1; t<=20; t++) {
-                            const isTarget = (t === 11);
-                            let rt, isCorr, notiType, phase;
-                            const noise = Math.floor(Math.random() * 400) - 200;
-
-                            if(isTarget) {
-                                phase = 1; notiType = groupType;
-                                if(groupType === 'Lover') { rt = 4500 + noise; isCorr = Math.random() > 0.25; } 
-                                else { rt = 2000 + noise; isCorr = Math.random() > 0.10; }
-                            } else {
-                                phase = 0; notiType = 'None';
-                                if (t >= 12 && t <= 15) {
-                                    if(groupType === 'Lover') rt = 2800 + noise;
-                                    else rt = 1100 + noise;
-                                } else { rt = 1000 + noise; }
-                                isCorr = Math.random() > 0.05; 
-                            }
-                            mockTrials.push({
-                                participant_id: `TEST_${expNum}`, exp_number: `TEST_${expNum}`, lover_name: 'Mock_Lover', ad_name: '카카오이모티콘',
-                                notification_type: notiType, notification_sender: 'Mock_Sender', trial_number: t, notification_phase: phase,
-                                reaction_time_ms: rt, is_correct: isCorr, device_os: randomOS, created_at: new Date(baseTime + (i * 20 + t) * 5000).toISOString()
-                            });
-                        }
-                    }
-
-                    try {
-                        for(let i=0; i<mockTrials.length; i+=100) { await db.from('Trials').insert(mockTrials.slice(i, i+100)); }
-                        showModal({ title: '성공', desc: '✅ 완벽한 통제 조건의 가짜 데이터 600건이 생성되었습니다!' }); loadData(); 
-                    } catch(err) { showModal({ title: '오류', desc: '❌ 생성 실패: ' + err.message }); } 
-                    finally { btn.innerHTML = originalText; btn.disabled = false; }
-                }
-            });
-        });
-
-        loadData();
     </script>
 </body>
 </html>
