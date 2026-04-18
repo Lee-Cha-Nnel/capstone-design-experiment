@@ -65,14 +65,14 @@
         .modern-pill-notification.anim-ios { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15); }
         .modern-pill-notification.show { transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); }
 
-        /* 🤖 안드로이드 스타일 (밝은 회색 통일) */
+        /* 🤖 안드로이드 스타일 (기존 오리지널 다크 바탕 복구) */
         .style-android {
             width: 92%; max-width: 420px;
-            background-color: #F5F5F5;
+            background-color: #8F8F8F;
             border-radius: 9999px; 
             padding: 6px 14px 6px 8px; 
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(0, 0, 0, 0.05); 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
         }
 
         /* 🍎 아이폰 스타일 (라이트 글래스모피즘) */
@@ -215,7 +215,15 @@
     <script>
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
-        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // 💡 수정된 부분: 시크릿 모드(저장소 차단) 환경에서도 에러가 나지 않도록 세션 옵션 강제 끄기
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+            }
+        });
 
         const CONFIG = {
             totalTrials: 20,             
@@ -412,8 +420,8 @@
                             ${noti.iconHtml}
                         </div>
                         <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
-                            <span class="text-[13px] font-bold text-gray-900 tracking-tight">${noti.title}</span>
-                            <span class="text-[13px] text-gray-800 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
+                            <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
+                            <span class="text-[13px] text-gray-200 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
                         <svg class="w-3.5 h-3.5 text-gray-400 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
