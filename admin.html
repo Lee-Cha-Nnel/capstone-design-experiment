@@ -151,7 +151,7 @@
                             <tr>
                                 <th class="py-3 px-4 font-bold">참여자 ID</th>
                                 <th class="py-3 px-4 font-bold">그룹 (Type)</th>
-                                <th class="py-3 px-4 font-bold">기기 (OS)</th> <!-- 🌟 기기 항목 추가 -->
+                                <th class="py-3 px-4 font-bold">기기 (OS)</th>
                                 <th class="py-3 px-4 font-bold">진행</th>
                                 <th class="py-3 px-4 font-bold">알림 여부</th>
                                 <th class="py-3 px-4 font-bold text-right">반응시간 (RT)</th>
@@ -224,7 +224,7 @@
         }
 
         // ==========================================
-        // 3. 뷰 전환 제어 (대시보드 <-> 전체 표)
+        // 3. 뷰 전환 제어
         // ==========================================
         const btnViewDash = document.getElementById('view-dashboard');
         const btnViewTable = document.getElementById('view-table');
@@ -234,7 +234,6 @@
         btnViewDash.addEventListener('click', () => {
             btnViewDash.className = 'px-4 py-2 bg-white text-gray-800 rounded-lg shadow-sm transition-all';
             btnViewTable.className = 'px-4 py-2 text-gray-500 hover:text-gray-800 rounded-lg transition-all';
-            
             chartSection.style.display = 'flex'; 
             tableSection.classList.replace('xl:w-full', 'xl:w-2/3'); 
         });
@@ -242,18 +241,16 @@
         btnViewTable.addEventListener('click', () => {
             btnViewTable.className = 'px-4 py-2 bg-white text-gray-800 rounded-lg shadow-sm transition-all';
             btnViewDash.className = 'px-4 py-2 text-gray-500 hover:text-gray-800 rounded-lg transition-all';
-            
             chartSection.style.display = 'none'; 
             tableSection.classList.replace('xl:w-2/3', 'xl:w-full'); 
         });
 
         // ==========================================
-        // 4. 차트 초기화 (🌟 1단계, 2단계 복구)
+        // 4. 차트 초기화
         // ==========================================
         Chart.defaults.font.family = "'Pretendard', sans-serif";
         
         function initCharts() {
-            // [1단계] 선그래프
             lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
                 type: 'line',
                 data: {
@@ -263,35 +260,23 @@
                         { label: '광고성', data: [0, 0], borderColor: '#4B7DD1', backgroundColor: '#4B7DD1', tension: 0.1, borderWidth: 2, pointRadius: 4 }
                     ]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: {size: 10} } } },
-                    scales: { y: { beginAtZero: false, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 10} } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: {size: 10} } } }, scales: { y: { beginAtZero: false, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 10} } } } }
             });
 
-            // [2단계] 막대그래프
             barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['관계성 (Lover)', '광고성 (Ad)'],
                     datasets: [{
                         label: '11번 문항 평균 반응시간 (ms)',
-                        data: [0, 0],
-                        backgroundColor: ['#e11d48', '#4B7DD1'], 
-                        borderRadius: 4, barPercentage: 0.5
+                        data: [0, 0], backgroundColor: ['#e11d48', '#4B7DD1'], borderRadius: 4, barPercentage: 0.5
                     }]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 11, weight:'bold'} } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: {size: 10} } }, x: { ticks: { font: {size: 11, weight:'bold'} } } } }
             });
         }
         initCharts();
 
-        // 특정 그룹/문항 평균 구하기 헬퍼
         function getGroupAvg(data, targetGroup, trialArray) {
             const fData = data.filter(d => {
                 let num = d.exp_number ? parseInt(d.exp_number.match(/\d+/)?.[0] || "1", 10) : 1;
@@ -313,9 +298,8 @@
             if (error) { tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-red-500">DB 오류: ${error.message}</td></tr>`; return; }
             rawData = data;
             
-            if(rawData.length === 0) {
-                rawData = [{ exp_number: "1000", trial_number: 1, notification_phase: 0, reaction_time_ms: 1200, is_correct: 1, device_os: 'iOS_Apple', created_at: new Date().toISOString() }];
-            }
+            // 💡 화면 렌더링용으로 넣어뒀던 1000번 가짜 데이터 로직 삭제!
+            
             updateDashboard();
         }
 
@@ -329,7 +313,6 @@
             document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
             document.getElementById('stat-baseline-rt').textContent = avgBaseline.toLocaleString();
 
-            // 🌟 1단계: 선그래프 연산
             const preLover = getGroupAvg(rawData, 'Lover', [7, 8, 9, 10]);
             const postLover = getGroupAvg(rawData, 'Lover', [12, 13, 14, 15]);
             const preAd = getGroupAvg(rawData, 'Ad', [7, 8, 9, 10]);
@@ -351,7 +334,6 @@
                 }
             }
 
-            // 🌟 2단계: 막대그래프 연산
             const targetLover = getGroupAvg(rawData, 'Lover', [11]);
             const targetAd = getGroupAvg(rawData, 'Ad', [11]);
 
@@ -378,7 +360,6 @@
         // ==========================================
         function renderTable() {
             const tbody = document.getElementById('table-body');
-            
             let filteredData = rawData;
             if (currentFilter !== 'All') {
                 filteredData = rawData.filter(row => {
@@ -417,7 +398,8 @@
                         <td class="py-3 px-4 text-center">${(row.is_correct === 1 || row.is_correct === true) ? '<span class="text-green-600 font-bold">O</span>' : '<span class="text-red-500 font-bold">X</span>'}</td>
                         <td class="py-3 px-4 text-gray-400 text-xs">${timeString}</td>
                         <td class="py-3 px-4 text-center">
-                            <button onclick="deleteRow('${row.created_at}')" class="text-gray-400 hover:text-red-500 transition-colors" title="이 기록 삭제하기">🗑️</button>
+                            <!-- 💡 수정됨: id가 있으면 id로 지우고, 없으면 created_at을 전달 -->
+                            <button onclick="deleteRow('${row.id || ''}', '${row.created_at}')" class="text-gray-400 hover:text-red-500 transition-colors" title="이 기록 삭제하기">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -425,9 +407,59 @@
         }
 
         // ==========================================
-        // 7. 이벤트 및 액션 로직
+        // 7. 삭제 및 이벤트 로직 (💡 오류 알림 로직 강화)
         // ==========================================
         
+        // 💡 단일 행 삭제 함수 개선 (id 매칭, 에러 피드백 추가)
+        window.deleteRow = (rowId, createdAt) => {
+            const targetColumn = rowId ? 'id' : 'created_at';
+            const targetValue = rowId ? rowId : createdAt;
+
+            showModal({
+                title: '기록 삭제', desc: '이 참가자의 기록(1줄)을 삭제하시겠습니까?', type: 'confirm', confirmText: '삭제', confirmColor: 'bg-red-600',
+                onConfirm: async () => { 
+                    // select()를 붙여야 삭제된 결과를 반환받아 권한 문제를 확인할 수 있습니다.
+                    const { data, error } = await db.from('Trials').delete().eq(targetColumn, targetValue).select();
+                    
+                    if (error) {
+                        showModal({ title: '❌ 삭제 오류', desc: `알 수 없는 오류: ${error.message}` });
+                    } else if (data && data.length === 0) {
+                        // 에러는 안 났지만 지워진 데이터가 0개 = 권한이 막혀있음
+                        showModal({ 
+                            title: '🔒 삭제 실패 (권한 문제)', 
+                            desc: 'DB에서 삭제 권한이 차단되어 있습니다.<br><b>Supabase 설정에서 RLS 보안을 해제해주세요.</b>' 
+                        });
+                    } else {
+                        loadData(); // 성공 시 새로고침
+                    }
+                }
+            });
+        };
+
+        // 💡 전체 초기화 함수 개선 (에러 피드백 추가)
+        document.getElementById('btn-delete-all').addEventListener('click', () => {
+            showModal({
+                title: '⚠️ 전체 데이터 초기화', desc: "경고: DB에 쌓인 모든 데이터가 영구 삭제됩니다.<br>정말 지우시려면 아래 창에 <strong>'삭제'</strong>라고 입력해주세요.", type: 'prompt', confirmText: '영구 삭제', confirmColor: 'bg-red-600',
+                onConfirm: async (val) => {
+                    if (val === '삭제') {
+                        const { data, error } = await db.from('Trials').delete().not('created_at', 'is', null).select();
+                        
+                        if (error) {
+                            showModal({ title: '❌ 삭제 오류', desc: `알 수 없는 오류: ${error.message}` });
+                        } else if (data && data.length === 0) {
+                            showModal({ 
+                                title: '🔒 삭제 실패 (권한 문제)', 
+                                desc: 'DB에서 삭제 권한이 차단되어 있습니다.<br><b>Supabase 설정에서 RLS 보안을 해제해주세요.</b>' 
+                            });
+                        } else {
+                            showModal({ title: '성공', desc: '✅ 모든 테스트 데이터가 초기화되었습니다.' }); 
+                            loadData(); 
+                        }
+                    }
+                }
+            });
+        });
+
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50');
@@ -440,7 +472,6 @@
         
         document.getElementById('btn-download').addEventListener('click', () => {
             if (rawData.length === 0) return showModal({ title: '알림', desc: '다운로드할 데이터가 없습니다.' });
-            // 🌟 엑셀 다운로드에 Device_OS 항목 추가
             const headers = ['Exp_Num', 'Group_Type', 'Device_OS', 'Trial', 'Is_Target(Noti)', 'Reaction_Time_ms', 'Correct(1=O)', 'Created_At']; 
             const csvRows = [headers.join(',')];
             rawData.forEach(row => {
@@ -455,33 +486,12 @@
             link.download = `Total_DB_Backup_${new Date().getTime()}.csv`; link.click();
         });
 
-        document.getElementById('btn-delete-all').addEventListener('click', () => {
-            showModal({
-                title: '⚠️ 전체 데이터 초기화', desc: "경고: DB에 쌓인 모든 데이터가 영구 삭제됩니다.<br>정말 지우시려면 아래 창에 <strong>'삭제'</strong>라고 입력해주세요.", type: 'prompt', confirmText: '영구 삭제', confirmColor: 'bg-red-600',
-                onConfirm: async (val) => {
-                    if (val === '삭제') {
-                        const { error } = await db.from('Trials').delete().not('created_at', 'is', null);
-                        if (!error) { showModal({ title: '성공', desc: '✅ 모든 테스트 데이터가 초기화되었습니다.' }); loadData(); }
-                    }
-                }
-            });
-        });
-
-        window.deleteRow = (createdAt) => {
-            showModal({
-                title: '기록 삭제', desc: '이 참가자의 기록(1줄)을 삭제하시겠습니까?', type: 'confirm', confirmText: '삭제', confirmColor: 'bg-red-600',
-                onConfirm: async () => { await db.from('Trials').delete().eq('created_at', createdAt); loadData(); }
-            });
-        };
-
-        // 🌟 가짜 데이터(Mock) 생성 로직 고도화
         document.getElementById('btn-generate-mock').addEventListener('click', () => {
             showModal({
-                title: '🧪 가짜 데이터 생성', desc: '테스트용 피험자 30명의 데이터(총 600건)를 생성합니다.<br>(기기OS 정보 및 12~15번 문항 잔여 효과 가설 적용)', type: 'confirm', confirmText: '데이터 생성', confirmColor: 'bg-purple-600',
+                title: '🧪 가짜 데이터 생성', desc: '테스트용 피험자 30명의 데이터(총 600건)를 생성합니다.', type: 'confirm', confirmText: '데이터 생성', confirmColor: 'bg-purple-600',
                 onConfirm: async () => {
                     const btn = document.getElementById('btn-generate-mock');
                     const originalText = btn.innerHTML; btn.innerHTML = '⏳ 생성 중...'; btn.disabled = true;
-
                     const mockTrials = []; const baseTime = new Date().getTime();
 
                     for(let i=1; i<=30; i++) {
@@ -500,16 +510,12 @@
                                 else { rt = 2000 + noise; isCorr = Math.random() > 0.10; }
                             } else {
                                 phase = 0; notiType = 'None';
-                                // 💡 12~15번 잔여 효과 가설 적용
                                 if (t >= 12 && t <= 15) {
-                                    if(groupType === 'Lover') rt = 2800 + noise; // 멍때림 유지
-                                    else rt = 1100 + noise; // 금방 회복
-                                } else {
-                                    rt = 1000 + noise;
-                                }
+                                    if(groupType === 'Lover') rt = 2800 + noise;
+                                    else rt = 1100 + noise;
+                                } else { rt = 1000 + noise; }
                                 isCorr = Math.random() > 0.05; 
                             }
-
                             mockTrials.push({
                                 participant_id: `TEST_${expNum}`, exp_number: `TEST_${expNum}`, lover_name: 'Mock_Lover', ad_name: '카카오이모티콘',
                                 notification_type: notiType, notification_sender: 'Mock_Sender', trial_number: t, notification_phase: phase,
