@@ -65,9 +65,12 @@
         .modern-pill-notification.anim-ios { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15); }
         .modern-pill-notification.show { transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); }
 
-        /* 🤖 안드로이드 스타일 (기존 오리지널 다크 바탕 복구) */
+        /* 🤖 안드로이드 스타일 (🌟 텍스트 길이에 맞춰지는 찐 알약 형태 복구!) */
         .style-android {
-            width: 92%; max-width: 420px;
+            width: fit-content; 
+            max-width: 92%;
+            min-width: 250px;
+            margin: 0 auto;
             background-color: #8F8F8F;
             border-radius: 9999px; 
             padding: 6px 14px 6px 8px; 
@@ -75,7 +78,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
 
-        /* 🍎 아이폰 스타일 (라이트 글래스모피즘) */
+        /* 🍎 아이폰 스타일 */
         .style-ios {
             width: 95%; max-width: 420px;
             background-color: rgba(245, 245, 245, 0.8);
@@ -122,49 +125,56 @@
     <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
-    <!-- 2. 시작 화면 -->
+    <!-- 2. 시작 화면 (하단 고정 UI) -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
-        <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full py-6">
-            <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4">실험 검사</h1>
-            <p class="text-gray-500 mb-4 text-center text-[14px] leading-relaxed">
-                화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
-                하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
-            </p>
+        <div class="flex-1 flex flex-col max-w-sm mx-auto w-full min-h-full relative">
+            
+            <div class="flex-1 flex flex-col justify-center w-full pt-4 pb-4">
+                <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4 text-center">실험 검사</h1>
+                <p class="text-gray-500 mb-4 text-center text-[14px] leading-relaxed">
+                    화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
+                    하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
+                </p>
 
-            <!-- 🛠️ 테스트용 OS 강제 선택 패널 -->
-            <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
-                <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
-                <div class="flex gap-2 justify-center">
-                    <button id="btn-os-auto" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600">자동 감지</button>
-                    <button id="btn-os-ios" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">아이폰</button>
-                    <button id="btn-os-android" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">안드로이드</button>
+                <!-- 🛠️ 테스트용 OS 강제 선택 패널 -->
+                <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
+                    <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
+                    <div class="flex gap-2 justify-center">
+                        <button id="btn-os-auto" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600">자동 감지</button>
+                        <button id="btn-os-ios" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">아이폰</button>
+                        <button id="btn-os-android" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50">안드로이드</button>
+                    </div>
+                    <p class="text-center text-[10px] text-blue-600/70 mt-2.5 font-medium">현재 적용된 상태: <strong id="current-os-span" class="text-blue-800 font-mono"></strong></p>
                 </div>
-                <p class="text-center text-[10px] text-blue-600/70 mt-2.5 font-medium">현재 적용된 상태: <strong id="current-os-span" class="text-blue-800 font-mono"></strong></p>
+                
+                <div class="w-full bg-gray-50 p-5 rounded-2xl mb-2 border border-gray-200 shadow-sm">
+                    <p class="text-center mb-5">
+                        <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 실험용으로만 쓰이며 즉시 파기됩니다.)</span>
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="exp-number" class="block text-[12.5px] font-medium text-gray-600 mb-1.5 ml-1">1. 실험번호 (연구자 안내)</label>
+                            <input type="text" id="exp-number" class="custom-input py-3.5" placeholder="예: 1000">
+                        </div>
+                        <div>
+                            <label for="lover-name" class="block text-[12.5px] font-medium text-gray-600 mb-1.5 ml-1">2. 가장 자주 카톡을 하는 지인/애인</label>
+                            <input type="text" id="lover-name" class="custom-input py-3.5" placeholder="예: 우리공주, 김철수">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 하단 고정 영역 -->
+            <div class="sticky bottom-0 bg-white w-full pt-4 pb-2 mt-auto z-10 flex flex-col items-center">
+                <button id="btn-start" class="tap-effect w-full py-4 bg-gray-800 text-white font-bold rounded-2xl text-xl shadow-md flex-shrink-0">
+                    실험 시작
+                </button>
+                <button id="btn-fullscreen" class="mt-5 text-sm text-gray-400 underline tap-effect flex-shrink-0 mb-2">
+                    전체화면으로 전환
+                </button>
             </div>
             
-            <div class="w-full bg-gray-50 p-5 rounded-2xl mb-8 border border-gray-200 shadow-sm">
-                <p class="text-center mb-5">
-                    <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 실험용으로만 쓰이며 즉시 파기됩니다.)</span>
-                </p>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label for="exp-number" class="block text-[12.5px] font-medium text-gray-600 mb-1.5 ml-1">1. 실험번호 (연구자 안내)</label>
-                        <input type="text" id="exp-number" class="custom-input py-3.5" placeholder="예: 1000">
-                    </div>
-                    <div>
-                        <label for="lover-name" class="block text-[12.5px] font-medium text-gray-600 mb-1.5 ml-1">2. 가장 자주 카톡을 하는 지인/애인</label>
-                        <input type="text" id="lover-name" class="custom-input py-3.5" placeholder="예: 우리공주, 김철수">
-                    </div>
-                </div>
-            </div>
-
-            <button id="btn-start" class="tap-effect w-full py-4 bg-gray-800 text-white font-bold rounded-2xl text-xl shadow-md flex-shrink-0">
-                실험 시작
-            </button>
-            <button id="btn-fullscreen" class="mt-6 text-sm text-gray-400 underline tap-effect flex-shrink-0">
-                전체화면으로 전환
-            </button>
         </div>
     </div>
 
@@ -216,7 +226,6 @@
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         
-        // 💡 수정된 부분: 시크릿 모드(저장소 차단) 환경에서도 에러가 나지 않도록 세션 옵션 강제 끄기
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: {
                 persistSession: false,
@@ -231,10 +240,11 @@
             notiDuration: 4000            
         };
         
-        // 🌟 이미지 경로 설정 (광고 프사, 관계성 프사)
+        // 🌟 이미지 경로 설정 (깃허브 이미지 연결)
         const IMAGE_URLS = {
             adProfile: './ad_profile.jpg',
-            loverProfile: './kakaotalk_profile.png' 
+            loverProfile: './kakaotalk_profile.png',
+            kakaoApp: './kakaotalk_profile.png' // 💡 안드로이드 카톡 아이콘도 이 파일 사용
         };
 
         function preloadImages() {
@@ -244,9 +254,8 @@
         }
 
         let userDeviceType = "Unknown";
-        let presenceChannel = null; // 🌟 실시간 접속자 채널 변수 추가
+        let presenceChannel = null;
 
-        // 💡 접속 기종(OS) 판별 함수
         function detectDevice() {
             const ua = navigator.userAgent.toLowerCase();
             if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
@@ -261,7 +270,6 @@
             }
         }
 
-        // 상태 업데이트 렌더링 함수
         function updateOsStatusText() {
             document.getElementById('current-os-span').innerText = userDeviceType;
         }
@@ -271,7 +279,6 @@
             userDeviceType = detectDevice();
             updateOsStatusText();
 
-            // 🌟 실시간 접속자 채널 입장 (피험자로 등록)
             presenceChannel = db.channel('online-users');
             presenceChannel.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
@@ -283,7 +290,6 @@
             });
         };
 
-        // 🛠️ 테스트용 OS 강제 선택 버튼 로직
         const btnOsAuto = document.getElementById('btn-os-auto');
         const btnOsIos = document.getElementById('btn-os-ios');
         const btnOsAndroid = document.getElementById('btn-os-android');
@@ -298,32 +304,16 @@
             btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition-colors border border-blue-600';
         }
 
-        btnOsAuto.addEventListener('click', () => {
-            resetOsButtons();
-            setOsButtonActive(btnOsAuto);
-            userDeviceType = detectDevice();
-            updateOsStatusText();
-        });
-
-        btnOsIos.addEventListener('click', () => {
-            resetOsButtons();
-            setOsButtonActive(btnOsIos);
-            userDeviceType = 'iOS_Apple'; // 아이폰 강제 설정
-            updateOsStatusText();
-        });
-
-        btnOsAndroid.addEventListener('click', () => {
-            resetOsButtons();
-            setOsButtonActive(btnOsAndroid);
-            userDeviceType = 'Android_Samsung'; // 안드로이드 강제 설정
-            updateOsStatusText();
-        });
+        btnOsAuto.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsAuto); userDeviceType = detectDevice(); updateOsStatusText(); });
+        btnOsIos.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsIos); userDeviceType = 'iOS_Apple'; updateOsStatusText(); });
+        btnOsAndroid.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsAndroid); userDeviceType = 'Android_Samsung'; updateOsStatusText(); });
 
 
-        // 🌟 아이콘 설정 (광고 프사, 지인 프사, 우측 뱃지)
+        // 🌟 아이콘 설정 (직접 그린 로고 빼고 깃허브 이미지 매핑)
         const ICONS = {
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
             kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`,
+            kakaoApp: `<img src="${IMAGE_URLS.kakaoApp}" class="w-full h-full object-cover">`, // 💡 안드 광고용 아이콘
             kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
         };
 
@@ -338,7 +328,7 @@
             { eq: "17 × 5",  ans: 85, choices: [75, 95, 85, 86], noti: "None" },
             { eq: "28 + 35", ans: 63, choices: [63, 53, 73, 64], noti: "None" },
             { eq: "24 × 3",  ans: 72, choices: [82, 72, 62, 74], noti: "None" },   
-            { eq: "41 + 22", ans: 63, choices: [53, 73, 63, 65], noti: "Target" }, // 11번 문제
+            { eq: "17 × 6",  ans: 102, choices: [92, 112, 102, 104], noti: "Target" }, // 💡 11번 문항 (난이도 상향)
             { eq: "16 × 4",  ans: 64, choices: [64, 54, 74, 66], noti: "None" },
             { eq: "37 + 16", ans: 53, choices: [63, 43, 54, 53], noti: "None" },
             { eq: "18 × 3",  ans: 54, choices: [54, 64, 44, 56], noti: "None" },
@@ -382,21 +372,25 @@
             screens[screenName].classList.add('active');
         }
 
-        // 🌟 핵심: 기종(OS)에 따라 알림 UI를 다르게 렌더링하는 로직
         function showSpecificNotification(type) {
             if (isNotiVisible || type === "None" || !dynamicNotifications[type]) return;
             
             const noti = dynamicNotifications[type];
-            const isIOS = userDeviceType.includes('iOS'); // 아이폰인지 확인
+            const isIOS = userDeviceType.includes('iOS'); 
+            
+            // 💡 안드로이드이면서 홀수(광고성 그룹)일 경우, 깃허브에 올린 프사로 교체!
+            let currentIconHtml = noti.iconHtml;
+            if (!isIOS && type === 'Ad') {
+                currentIconHtml = ICONS.kakaoApp;
+            }
 
             if (isIOS) {
-                // 🍎 아이폰(iOS) 스타일 렌더링
                 notiEl.className = 'modern-pill-notification anim-ios style-ios';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
                         <div class="relative w-[44px] h-[44px] flex-shrink-0">
                             <div class="w-full h-full rounded-full ${noti.iconBg} overflow-hidden flex items-center justify-center border border-gray-100/50">
-                                ${noti.iconHtml}
+                                ${currentIconHtml}
                             </div>
                             <div class="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] bg-[#FEE500] rounded-[6px] flex items-center justify-center border-[2px] border-white/80 shadow-sm">
                                ${ICONS.kakaoBadge}
@@ -412,12 +406,11 @@
                     </div>
                 `;
             } else {
-                // 🤖 안드로이드 스타일 렌더링
                 notiEl.className = 'modern-pill-notification anim-android style-android';
                 notiEl.innerHTML = `
                     <div class="flex items-center w-full">
                         <div class="w-[28px] h-[28px] rounded-[9px] flex-shrink-0 ${noti.iconBg} overflow-hidden flex items-center justify-center">
-                            ${noti.iconHtml}
+                            ${currentIconHtml}
                         </div>
                         <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
                             <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
@@ -453,7 +446,7 @@
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
-            // 그룹별 알림 텍스트 및 데이터 세팅
+            // 그룹별 알림 텍스트 및 데이터 세팅 (🌟 관계성 텍스트 길이 수정)
             dynamicNotifications = {
                 'Lover': { 
                     type: 'Lover', 
@@ -461,7 +454,7 @@
                     iconHtml: ICONS.kakaoLover,
                     iconBg: 'bg-white', 
                     title: loverName, 
-                    msg: `머하고 잇어?` 
+                    msg: `오늘 저녁에 뭐해? 끝나고 머할까.` 
                 },
                 'Ad': { 
                     type: 'Ad', 
@@ -583,7 +576,6 @@
             hideNotification();
             showScreen('result');
             
-            // 실험 종료 시 Presence 채널에서 퇴장
             if (presenceChannel) {
                 presenceChannel.untrack();
             }
