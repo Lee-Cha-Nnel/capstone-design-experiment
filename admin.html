@@ -43,7 +43,7 @@
             <h1 class="text-2xl font-extrabold text-gray-800 tracking-tight">📊 인지 실험 데이터 대시보드</h1>
             <div class="flex items-center gap-3 mt-1">
                 <p class="text-sm text-gray-500">알림 방해 효과 (관계성 vs 광고성) 실시간 모니터링</p>
-                <!-- 🌟 실시간 접속자 뱃지 추가 -->
+                <!-- 🌟 실시간 접속자 뱃지 -->
                 <span id="online-badge" class="px-2.5 py-0.5 bg-green-100 text-green-800 text-[11px] font-bold rounded-full border border-green-200 shadow-sm flex items-center gap-1.5 transition-all">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
                     접속자 확인 중...
@@ -67,6 +67,10 @@
                 </button>
                 <button id="btn-download" class="tap-effect px-4 py-2 bg-[#4B7DD1] text-white rounded-lg hover:bg-blue-700 font-bold transition-colors shadow-md">
                     ⬇ CSV
+                </button>
+                <!-- 🌟 추가됨: SPSS 다운로드 버튼 -->
+                <button id="btn-download-spss" class="tap-effect px-4 py-2 bg-[#187A1E] text-white rounded-lg hover:bg-green-700 font-bold transition-colors shadow-md flex items-center gap-1">
+                    📈 SPSS 다운로드
                 </button>
                 <button id="btn-generate-mock" class="tap-effect px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold transition-colors shadow-md">
                     🧪 가짜 데이터
@@ -105,7 +109,7 @@
         <!-- 하단: 그래프 & 데이터 테이블 영역 -->
         <div class="flex flex-col xl:flex-row gap-6 flex-1 min-h-0">
             
-            <!-- 🌟 실시간 그래프 패널 (1단계 + 2단계 세로 배치) -->
+            <!-- 🌟 실시간 그래프 패널 -->
             <div id="chart-section" class="w-full xl:w-1/3 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col shrink-0 overflow-y-auto transition-all duration-300 gap-8">
                 
                 <!-- [1단계] 선그래프: 잔여 효과 -->
@@ -305,7 +309,6 @@
             if (error) { tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-red-500">DB 오류: ${error.message}</td></tr>`; return; }
             
             rawData = data;
-            
             updateDashboard();
         }
 
@@ -412,7 +415,7 @@
         }
 
         // ==========================================
-        // 7. 삭제 및 이벤트 로직 (RLS 에러 대응)
+        // 7. 삭제 및 이벤트 로직
         // ==========================================
         window.deleteRow = (rowId, createdAt) => {
             const targetColumn = rowId ? 'id' : 'created_at';
@@ -470,6 +473,9 @@
 
         document.getElementById('btn-refresh').addEventListener('click', loadData);
         
+        // ----------------------------------------------------
+        // 💾 기본 세로형 CSV 다운로드
+        // ----------------------------------------------------
         document.getElementById('btn-download').addEventListener('click', () => {
             if (rawData.length === 0) return showModal({ title: '알림', desc: '다운로드할 데이터가 없습니다.' });
             const headers = ['Exp_Num', 'Group_Type', 'Device_OS', 'Trial', 'Is_Target(Noti)', 'Reaction_Time_ms', 'Correct(1=O)', 'Created_At']; 
@@ -486,6 +492,71 @@
             link.download = `Total_DB_Backup_${new Date().getTime()}.csv`; link.click();
         });
 
+        // ----------------------------------------------------
+        // 📈 🌟 [추가됨] SPSS 전용 가로형(Wide Format) CSV 다운로드
+        // ----------------------------------------------------
+        document.getElementById('btn-download-spss').addEventListener('click', () => {
+            if (rawData.length === 0) return showModal({ title: '알림', desc: '다운로드할 데이터가 없습니다.' });
+
+            // 1. 피험자별 묶기
+            const participants = {};
+            rawData.forEach(row => {
+                const id = row.exp_number;
+                if (!id) return;
+                
+                if (!participants[id]) {
+                    let numMatched = id.match(/\d+/);
+                    let num = numMatched ? parseInt(numMatched[0], 10) : 1;
+                    
+                    // 💡 연구자님 요청 반영: 광고성(홀수) = 1, 관계성(짝수) = 2 로 코딩!
+                    let groupType = (num % 2 !== 0) ? 1 : 2; 
+                    
+                    participants[id] = { ID: id, Group: groupType, OS: row.device_os || 'Unknown', Trials: {} };
+                }
+                participants[id].Trials[row.trial_number] = {
+                    acc: (row.is_correct === 1 || row.is_correct === true) ? 1 : 0,
+                    rt: row.reaction_time_ms
+                };
+            });
+
+            // 2. CSV 헤더 생성
+            const headers = ['ID', 'OS', 'Group'];
+            for (let i = 1; i <= 20; i++) headers.push(`Q${i}_ACC`);
+            for (let i = 1; i <= 20; i++) headers.push(`Q${i}_RT`);
+            headers.push('Total_ACC');
+
+            const csvRows = [headers.join(',')];
+
+            // 3. 1명당 1줄씩 데이터 생성
+            Object.values(participants).forEach(p => {
+                const row = [p.ID, p.OS, p.Group];
+                let correctCount = 0;
+                
+                for (let i = 1; i <= 20; i++) {
+                    if (p.Trials[i]) { row.push(p.Trials[i].acc); correctCount += p.Trials[i].acc; } 
+                    else { row.push('.'); }
+                }
+                for (let i = 1; i <= 20; i++) {
+                    if (p.Trials[i]) { row.push(p.Trials[i].rt); } 
+                    else { row.push('.'); }
+                }
+                
+                const totalAccRate = Math.round((correctCount / 20) * 100);
+                row.push(`${totalAccRate}%`);
+                csvRows.push(row.join(','));
+            });
+
+            // 4. 파일 다운로드
+            const csvContent = "\uFEFF" + csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+            link.download = `SPSS_WideData_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        });
+
+        // ----------------------------------------------------
+        // 가짜 데이터 생성
+        // ----------------------------------------------------
         document.getElementById('btn-generate-mock').addEventListener('click', () => {
             showModal({
                 title: '🧪 가짜 데이터 생성', desc: '테스트용 피험자 30명의 데이터(총 600건)를 생성합니다.', type: 'confirm', confirmText: '데이터 생성', confirmColor: 'bg-purple-600',
