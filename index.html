@@ -152,11 +152,10 @@
     <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
-    <!-- 2. 시작 화면 (하단 고정 UI 적용) -->
+    <!-- 2. 시작 화면 -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col max-w-sm mx-auto w-full min-h-full relative">
             
-            <!-- 위쪽 콘텐츠 영역 -->
             <div class="flex-1 flex flex-col justify-center w-full pt-4 pb-4">
                 <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4 text-center">실험 검사</h1>
                 <p class="text-gray-500 mb-4 text-center text-[14px] leading-relaxed">
@@ -164,7 +163,7 @@
                     하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
                 </p>
 
-                <!-- 🛠️ 테스트용 OS 강제 선택 패널 -->
+                <!-- 테스트용 OS 강제 선택 패널 -->
                 <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
                     <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
                     <div class="flex gap-2 justify-center">
@@ -218,11 +217,11 @@
             
             <h3 class="text-xl font-bold text-gray-900 mb-2">실험 시작 코드</h3>
             <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">
-                곧 비밀번호 코드를 안내해 드릴 예정입니다.<br>실험자의 안내에 따라 움직여주세요.
+                모두가 동시에 시작할 수 있도록<br>연구자가 안내한 코드를 입력해주세요.
             </p>
             
-            <!-- 숫자만 입력받는 큰 폰트의 입력창 -->
-            <input type="password" id="input-password" class="custom-input text-center text-3xl font-mono tracking-[0.3em] py-3 mb-2" placeholder="••••" maxlength="4" inputmode="numeric">
+            <!-- 💡 브라우저 비밀번호 경고 차단: type="tel" 및 CSS 처리 -->
+            <input type="tel" id="input-password" class="custom-input text-center text-3xl font-mono tracking-[0.3em] py-3 mb-2" placeholder="••••" maxlength="4" autocomplete="off" style="-webkit-text-security: disc;">
             
             <!-- 에러 메시지 (기본 숨김) -->
             <p id="password-error" class="text-red-500 text-xs font-bold mb-5 hidden">코드가 올바르지 않습니다.</p>
@@ -279,10 +278,9 @@
     </div>
 
     <script>
-        // 🌟 1. 연구자님이 원하시는 실험 시작 비밀번호를 설정하세요!
-        const EXPERIMENT_PASSWORD = "1002"; 
+        // 🌟 실험 시작 비밀번호 설정
+        const EXPERIMENT_PASSWORD = "0000"; 
 
-        // Supabase 설정
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         
@@ -300,11 +298,10 @@
             notiDuration: 4000            
         };
         
-        // 🌟 이미지 경로 설정 (깃허브 이미지 연결)
         const IMAGE_URLS = {
             adProfile: './ad_profile.jpg',
             loverProfile: './kakaotalk_profile.png',
-            kakaoApp: './kakaotalk_profile.png' // 💡 안드로이드 광고 로고도 이걸로 사용
+            kakaoApp: './kakaotalk_profile.png' 
         };
 
         function preloadImages() {
@@ -317,7 +314,6 @@
         let userDeviceType = "Unknown";
         let presenceChannel = null;
 
-        // 기기 판별 함수
         function detectDevice() {
             const ua = navigator.userAgent.toLowerCase();
             if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
@@ -341,7 +337,6 @@
             userDeviceType = detectDevice();
             updateOsStatusText();
 
-            // 실시간 접속자 감지
             presenceChannel = db.channel('online-users');
             presenceChannel.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
@@ -353,7 +348,6 @@
             });
         };
 
-        // 테스트용 OS 강제 선택 버튼 로직
         const btnOsAuto = document.getElementById('btn-os-auto');
         const btnOsIos = document.getElementById('btn-os-ios');
         const btnOsAndroid = document.getElementById('btn-os-android');
@@ -369,27 +363,20 @@
         }
 
         btnOsAuto.addEventListener('click', () => { 
-            resetOsButtons(); 
-            setOsButtonActive(btnOsAuto); 
-            userDeviceType = detectDevice(); 
-            updateOsStatusText(); 
+            resetOsButtons(); setOsButtonActive(btnOsAuto); 
+            userDeviceType = detectDevice(); updateOsStatusText(); 
         });
 
         btnOsIos.addEventListener('click', () => { 
-            resetOsButtons(); 
-            setOsButtonActive(btnOsIos); 
-            userDeviceType = 'iOS_Apple'; 
-            updateOsStatusText(); 
+            resetOsButtons(); setOsButtonActive(btnOsIos); 
+            userDeviceType = 'iOS_Apple'; updateOsStatusText(); 
         });
 
         btnOsAndroid.addEventListener('click', () => { 
-            resetOsButtons(); 
-            setOsButtonActive(btnOsAndroid); 
-            userDeviceType = 'Android_Samsung'; 
-            updateOsStatusText(); 
+            resetOsButtons(); setOsButtonActive(btnOsAndroid); 
+            userDeviceType = 'Android_Samsung'; updateOsStatusText(); 
         });
 
-        // 아이콘 템플릿 설정
         const ICONS = {
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
             kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`,
@@ -397,7 +384,6 @@
             kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
         };
 
-        // 🌟 11번 타겟 문제 (17 x 6 = 102) 적용됨
         const TRIAL_SCENARIO = [
             { eq: "15 + 23", ans: 38, choices: [48, 38, 27, 39], noti: "None" },
             { eq: "14 × 3",  ans: 42, choices: [42, 32, 52, 45], noti: "None" },
@@ -421,41 +407,19 @@
             { eq: "19 × 6",  ans: 114, choices: [114, 104, 124, 116], noti: "None" }
         ];
 
-        let currentTrial = 0;
-        let trialData = [];
-        let trialStartTime = 0;
-        let isNotiVisible = false;
-        let notiTimeout = null;
+        let currentTrial = 0, trialData = [], trialStartTime = 0, isNotiVisible = false, notiTimeout = null;
+        let expNum = "", loverName = "", adName = "카카오이모티콘", dynamicNotifications = {}; 
+        let currentEquation = "", currentCorrectAnswer = 0;
 
-        let expNum = "";
-        let loverName = "";
-        let adName = "카카오이모티콘"; 
-        let dynamicNotifications = {}; 
-
-        let currentEquation = "";
-        let currentCorrectAnswer = 0;
-
-        const screens = { 
-            intro: document.getElementById('screen-intro'), 
-            fixation: document.getElementById('screen-fixation'), 
-            task: document.getElementById('screen-task'), 
-            result: document.getElementById('screen-result') 
-        };
-        
+        const screens = { intro: document.getElementById('screen-intro'), fixation: document.getElementById('screen-fixation'), task: document.getElementById('screen-task'), result: document.getElementById('screen-result') };
         const notiEl = document.getElementById('notification');
-        const ansBtns = [ 
-            document.getElementById('ans-btn-0'), 
-            document.getElementById('ans-btn-1'), 
-            document.getElementById('ans-btn-2'), 
-            document.getElementById('ans-btn-3') 
-        ];
+        const ansBtns = [ document.getElementById('ans-btn-0'), document.getElementById('ans-btn-1'), document.getElementById('ans-btn-2'), document.getElementById('ans-btn-3') ];
 
         function showScreen(screenName) { 
             Object.values(screens).forEach(s => s.classList.remove('active')); 
             screens[screenName].classList.add('active'); 
         }
 
-        // 알림 렌더링 함수
         function showSpecificNotification(type) {
             if (isNotiVisible || type === "None" || !dynamicNotifications[type]) return;
             
@@ -463,10 +427,7 @@
             const isIOS = userDeviceType.includes('iOS'); 
             let currentIconHtml = noti.iconHtml;
             
-            // 안드로이드이면서 홀수(광고)일 경우 아이콘 교체
-            if (!isIOS && type === 'Ad') {
-                currentIconHtml = ICONS.kakaoApp;
-            }
+            if (!isIOS && type === 'Ad') { currentIconHtml = ICONS.kakaoApp; }
 
             if (isIOS) {
                 notiEl.className = 'modern-pill-notification anim-ios style-ios';
@@ -507,17 +468,12 @@
                 `;
             }
             
-            notiEl.classList.add('show'); 
-            isNotiVisible = true;
-            
+            notiEl.classList.add('show'); isNotiVisible = true;
             if (notiTimeout) clearTimeout(notiTimeout);
             notiTimeout = setTimeout(() => hideNotification(), CONFIG.notiDuration);
         }
 
-        function hideNotification() { 
-            notiEl.classList.remove('show'); 
-            isNotiVisible = false; 
-        }
+        function hideNotification() { notiEl.classList.remove('show'); isNotiVisible = false; }
 
         // 🌟 비밀번호 모달 제어 로직
         const modal = document.getElementById('modal-password');
@@ -526,42 +482,28 @@
         const passError = document.getElementById('password-error');
 
         function openModal() {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex'); // 💡 왼쪽 상단 쏠림 버그 해결! (정중앙 정렬 속성 부여)
-            void modal.offsetWidth; // DOM Reflow (애니메이션 발동용)
-            modal.classList.remove('opacity-0');
-            modalContent.classList.remove('scale-95');
-            passInput.value = '';
-            passError.classList.add('hidden');
-            passInput.focus();
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            void modal.offsetWidth; 
+            modal.classList.remove('opacity-0'); modalContent.classList.remove('scale-95');
+            passInput.value = ''; passError.classList.add('hidden'); passInput.focus();
         }
 
         function closeModal() {
-            modal.classList.add('opacity-0');
-            modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex'); // 💡 닫을 때 원상복구
-            }, 300);
+            modal.classList.add('opacity-0'); modalContent.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
 
-        // [실험 시작] 버튼 클릭 시 모달 띄우기
         document.getElementById('btn-start').addEventListener('click', () => {
             expNum = document.getElementById('exp-number').value.trim();
-            if (expNum === '1111') { 
-                window.location.href = 'admin.html'; 
-                return; 
-            }
+            if (expNum === '1111') { window.location.href = 'admin.html'; return; }
             openModal(); 
         });
 
         document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
 
-        // [시작하기] 버튼 클릭 시 비밀번호 검증
         document.getElementById('btn-modal-confirm').addEventListener('click', () => {
             if(passInput.value === EXPERIMENT_PASSWORD) {
-                closeModal();
-                startActualExperiment(); // 정답이면 진짜 실험 시작!
+                closeModal(); startActualExperiment(); 
             } else {
                 passError.classList.remove('hidden');
                 modalContent.classList.add('animate-shake'); 
@@ -569,65 +511,35 @@
             }
         });
 
-        // 엔터키 지원
         passInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                document.getElementById('btn-modal-confirm').click();
-            }
+            if (e.key === 'Enter') document.getElementById('btn-modal-confirm').click();
         });
 
-        // 실제 실험 시작 로직
         function startActualExperiment() {
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
-            // 🌟 관계성 메시지 길이 맞춤 적용됨
             dynamicNotifications = {
-                'Lover': { 
-                    type: 'Lover', 
-                    sender: loverName, 
-                    iconHtml: ICONS.kakaoLover, 
-                    iconBg: 'bg-white', 
-                    title: loverName, 
-                    msg: `오늘 저녁에 뭐해? 끝나고 머할까.` 
-                },
-                'Ad': { 
-                    type: 'Ad', 
-                    sender: adName, 
-                    iconHtml: ICONS.kakaoAd, 
-                    iconBg: 'bg-white', 
-                    title: adName, 
-                    msg: `(광고) 오늘은 이모티콘 무료로 받는날!` 
-                }
+                'Lover': { type: 'Lover', sender: loverName, iconHtml: ICONS.kakaoLover, iconBg: 'bg-white', title: loverName, msg: `오늘 저녁에 뭐해? 끝나고 머할까.` },
+                'Ad': { type: 'Ad', sender: adName, iconHtml: ICONS.kakaoAd, iconBg: 'bg-white', title: adName, msg: `(광고) 오늘은 이모티콘 무료로 받는날!` }
             };
 
-            currentTrial = 0; 
-            trialData = []; 
-            document.getElementById('progress-bar').style.width = '0%';
-            
-            hideNotification();
-            nextTrial();
+            currentTrial = 0; trialData = []; document.getElementById('progress-bar').style.width = '0%';
+            hideNotification(); nextTrial();
         }
 
         function nextTrial() {
-            if (currentTrial >= CONFIG.totalTrials) { 
-                endExperiment(); 
-                return; 
-            }
+            if (currentTrial >= CONFIG.totalTrials) { endExperiment(); return; }
             currentTrial++;
             document.getElementById('trial-counter').textContent = currentTrial;
             document.getElementById('progress-bar').style.width = `${(currentTrial / CONFIG.totalTrials) * 100}%`;
-            
-            showScreen('fixation'); 
-            setTimeout(() => presentStimulus(), CONFIG.fixationTime);
+            showScreen('fixation'); setTimeout(() => presentStimulus(), CONFIG.fixationTime);
         }
 
         function presentStimulus() {
             showScreen('task');
-            
             const currentTrialData = TRIAL_SCENARIO[currentTrial - 1];
-            currentEquation = currentTrialData.eq; 
-            currentCorrectAnswer = currentTrialData.ans;
+            currentEquation = currentTrialData.eq; currentCorrectAnswer = currentTrialData.ans;
             document.getElementById('target-equation').textContent = currentEquation;
 
             for(let i=0; i<4; i++) {
@@ -641,11 +553,9 @@
                 let notiType = (num % 2 === 0) ? "Lover" : "Ad"; 
                 setTimeout(() => showSpecificNotification(notiType), 500); 
             }
-            
             trialStartTime = performance.now();
         }
 
-        // 버튼 입력 처리
         ansBtns.forEach(btn => { 
             btn.addEventListener('touchstart', handleInput, {passive: false}); 
             btn.addEventListener('mousedown', handleInput); 
@@ -671,63 +581,31 @@
             }
 
             trialData.push({ 
-                expNum: expNum, 
-                loverName: loverName, 
-                adName: adName, 
-                trialNumber: currentTrial, 
-                equation: currentEquation, 
-                correctAnswer: currentCorrectAnswer, 
-                chosenAnswer: selectedValue, 
-                notificationType: loggedNotiType, 
-                notificationSender: loggedNotiSender, 
-                isCorrect: isCorrect ? 1 : 0, 
-                reactionTimeMs: reactionTime, 
-                deviceOS: userDeviceType 
+                expNum: expNum, loverName: loverName, adName: adName, trialNumber: currentTrial, equation: currentEquation, 
+                correctAnswer: currentCorrectAnswer, chosenAnswer: selectedValue, notificationType: loggedNotiType, 
+                notificationSender: loggedNotiSender, isCorrect: isCorrect ? 1 : 0, reactionTimeMs: reactionTime, deviceOS: userDeviceType 
             });
 
             if (db) {
                 db.from('Trials').insert([{ 
-                    participant_id: expNum, 
-                    exp_number: expNum, 
-                    lover_name: loverName, 
-                    ad_name: adName, 
-                    notification_type: loggedNotiType, 
-                    notification_sender: loggedNotiSender, 
-                    trial_number: currentTrial, 
-                    notification_phase: phaseNum, 
-                    reaction_time_ms: reactionTime, 
-                    is_correct: isCorrect, 
-                    device_os: userDeviceType 
-                }]).then(({ error }) => { 
-                    if (error) console.error('DB 전송 에러:', error); 
-                });
+                    participant_id: expNum, exp_number: expNum, lover_name: loverName, ad_name: adName, 
+                    notification_type: loggedNotiType, notification_sender: loggedNotiSender, trial_number: currentTrial, 
+                    notification_phase: phaseNum, reaction_time_ms: reactionTime, is_correct: isCorrect, device_os: userDeviceType 
+                }]).then(({ error }) => { if (error) console.error('DB 전송 에러:', error); });
             }
             nextTrial();
         }
 
-        function endExperiment() { 
-            hideNotification(); 
-            showScreen('result'); 
-            if (presenceChannel) presenceChannel.untrack(); 
-        }
+        function endExperiment() { hideNotification(); showScreen('result'); if (presenceChannel) presenceChannel.untrack(); }
 
-        // 기타 부가 기능
-        notiEl.addEventListener('click', () => { 
-            hideNotification(); 
-            if(notiTimeout) clearTimeout(notiTimeout); 
-        });
+        notiEl.addEventListener('click', () => { hideNotification(); if(notiTimeout) clearTimeout(notiTimeout); });
         
         document.getElementById('btn-fullscreen').addEventListener('click', () => { 
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err)); 
-            } else {
-                document.exitFullscreen();
-            }
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => console.log(err)); } 
+            else { document.exitFullscreen(); }
         });
         
-        document.getElementById('btn-restart').addEventListener('click', () => {
-            showScreen('intro');
-        });
+        document.getElementById('btn-restart').addEventListener('click', () => { showScreen('intro'); });
 
         document.getElementById('btn-download-local').addEventListener('click', () => {
             if (trialData.length === 0) return;
@@ -735,26 +613,15 @@
             const csvRows = [headers.join(',')];
             
             trialData.forEach(row => {
-                let numMatched = row.expNum.match(/\d+/); 
-                let num = numMatched ? parseInt(numMatched[0], 10) : 1;
-                let groupType = (num % 2 === 0) ? '관계성' : '광고성'; 
-                let notiFired = (row.notificationType !== 'None') ? 'O' : 'X';
-                
-                csvRows.push([
-                    row.expNum, groupType, row.trialNumber, row.equation, 
-                    row.correctAnswer, row.chosenAnswer, notiFired, 
-                    row.isCorrect, row.reactionTimeMs, row.deviceOS
-                ].join(','));
+                let numMatched = row.expNum.match(/\d+/); let num = numMatched ? parseInt(numMatched[0], 10) : 1;
+                let groupType = (num % 2 === 0) ? '관계성' : '광고성'; let notiFired = (row.notificationType !== 'None') ? 'O' : 'X';
+                csvRows.push([row.expNum, groupType, row.trialNumber, row.equation, row.correctAnswer, row.chosenAnswer, notiFired, row.isCorrect, row.reactionTimeMs, row.deviceOS].join(','));
             });
             
             const csvContent = "\uFEFF" + csvRows.join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); 
-            link.href = URL.createObjectURL(blob); 
-            link.download = `math_task_data_${expNum}.csv`;
-            document.body.appendChild(link); 
-            link.click(); 
-            document.body.removeChild(link);
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); 
+            link.download = `math_task_data_${expNum}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         });
     </script>
 </body>
