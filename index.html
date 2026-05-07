@@ -22,10 +22,12 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
+            height: 100dvh; /* 🌟 최적화 1: 모바일 브라우저 주소창 높이를 제외한 '순수 화면 크기' 확보 */
             font-family: 'Pretendard', -apple-system, sans-serif;
             background-color: #ffffff !important; 
             color: #1f2937; 
             overflow: hidden;
+            overscroll-behavior-y: none; /* 🌟 최적화 3-1: iOS 특유의 고무줄 스크롤(Bounce) CSS 단에서 1차 차단 */
             touch-action: manipulation;
             -webkit-font-smoothing: antialiased;
         }
@@ -73,10 +75,10 @@
         }
         
         .modern-pill-notification.show { 
-            transform: translate(-50%, calc(env(safe-area-inset-top, 10px) + 5px)); 
+            transform: translate(-50%, calc(env(safe-area-inset-top, 44px) + 5px)); 
         }
 
-        /* 🤖 안드로이드 스타일 (텍스트 길이에 맞춰지는 찐 알약 형태 복구) */
+        /* 🤖 안드로이드 스타일 */
         .style-android {
             width: fit-content; 
             max-width: 92%;
@@ -89,7 +91,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
 
-        /* 🍎 아이폰 스타일 (글래스모피즘) */
+        /* 🍎 아이폰 스타일 */
         .style-ios {
             width: 95%; 
             max-width: 420px;
@@ -131,20 +133,15 @@
             box-shadow: 0 0 0 1px #4B7DD1;
             background-color: #ffffff;
         }
-        .custom-input::placeholder { 
-            color: #9ca3af; 
-        }
+        .custom-input::placeholder { color: #9ca3af; }
 
-        /* 🌟 비밀번호 틀렸을 때 흔들리는 애니메이션 */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             50% { transform: translateX(5px); }
             75% { transform: translateX(-5px); }
         }
-        .animate-shake { 
-            animation: shake 0.4s ease-in-out; 
-        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
     </style>
 </head>
 <body>
@@ -152,7 +149,7 @@
     <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
-    <!-- 2. 시작 화면 -->
+    <!-- 2. 시작 화면 (이 화면에서만 스크롤 허용) -->
     <div id="screen-intro" class="screen active p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col max-w-sm mx-auto w-full min-h-full relative">
             
@@ -163,7 +160,7 @@
                     하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
                 </p>
 
-                <!-- 테스트용 OS 강제 선택 패널 -->
+                <!-- 테스트용 OS 패널 -->
                 <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
                     <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
                     <div class="flex gap-2 justify-center">
@@ -208,22 +205,15 @@
     <!-- 🌟 비밀번호 입력 팝업(모달) -->
     <div id="modal-password" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[10000] hidden items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[24px] p-7 w-[85%] max-w-[320px] shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col items-center" id="modal-content">
-            <!-- 자물쇠 아이콘 -->
             <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-700">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                </svg>
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
             </div>
             
             <h3 class="text-xl font-bold text-gray-900 mb-2">실험 시작 코드</h3>
-            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">
-                모두가 동시에 시작할 수 있도록<br>연구자가 안내한 코드를 입력해주세요.
-            </p>
+            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">모두가 동시에 시작할 수 있도록<br>연구자가 안내한 코드를 입력해주세요.</p>
             
-            <!-- 💡 브라우저 비밀번호 경고 차단: type="tel" 및 CSS 처리 -->
             <input type="tel" id="input-password" class="custom-input text-center text-3xl font-mono tracking-[0.3em] py-3 mb-2" placeholder="••••" maxlength="4" autocomplete="off" style="-webkit-text-security: disc;">
             
-            <!-- 에러 메시지 (기본 숨김) -->
             <p id="password-error" class="text-red-500 text-xs font-bold mb-5 hidden">코드가 올바르지 않습니다.</p>
             
             <div class="flex gap-3 w-full mt-2">
@@ -240,22 +230,24 @@
 
     <!-- 4. 본 실험 화면 -->
     <div id="screen-task" class="screen">
-        <div class="pt-12 px-6 flex justify-between items-center z-10">
+        <div class="pt-12 px-6 flex justify-between items-center z-10 flex-shrink-0">
             <div class="w-full bg-gray-200 rounded-full h-1.5">
                 <div id="progress-bar" class="bg-gray-600 h-1.5 rounded-full" style="width: 0%"></div>
             </div>
             <span class="text-xs text-gray-500 font-bold ml-4 whitespace-nowrap"><span id="trial-counter">1</span> / <span id="total-trials">20</span></span>
         </div>
 
-        <div class="flex-1 flex flex-col items-center justify-center relative">
+        <!-- 🌟 최적화 2: 고정 픽셀(px) 제거 및 Flex 비율 기반(Fluid) 레이아웃 적용 -->
+        <div class="flex-[1.2] flex flex-col items-center justify-center relative min-h-0">
             <div id="target-equation" class="math-text text-gray-800"></div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 p-5 pb-10">
-            <button id="ans-btn-0" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
-            <button id="ans-btn-1" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
-            <button id="ans-btn-2" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
-            <button id="ans-btn-3" class="color-btn py-12 rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
+        <!-- 버튼 그룹: 화면 하단의 남은 영역을 꽉 채우도록 h-full 적용 -->
+        <div class="flex-1 w-full grid grid-cols-2 gap-4 px-5 pb-12 min-h-[25vh]">
+            <button id="ans-btn-0" class="w-full h-full flex items-center justify-center color-btn rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
+            <button id="ans-btn-1" class="w-full h-full flex items-center justify-center color-btn rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
+            <button id="ans-btn-2" class="w-full h-full flex items-center justify-center color-btn rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
+            <button id="ans-btn-3" class="w-full h-full flex items-center justify-center color-btn rounded-[1.8rem] shadow-sm font-bold text-gray-800 bg-gray-100 border border-gray-200"></button>
         </div>
     </div>
 
@@ -278,18 +270,21 @@
     </div>
 
     <script>
-        // 🌟 실험 시작 비밀번호 설정
+        // 🌟 최적화 3-2: 실험 중 고무줄 바운스(Rubber-banding) 및 드래그 완벽 차단 로직
+        document.addEventListener('touchmove', function(e) {
+            // '인트로(입력) 화면'과 '결과 화면'을 제외한 과제 집중 구간에서만 터치 스와이프를 원천 차단합니다.
+            if (screens.task.classList.contains('active') || screens.fixation.classList.contains('active')) {
+                e.preventDefault();
+            }
+        }, { passive: false }); // passive: false를 주어야 preventDefault가 동작함
+
         const EXPERIMENT_PASSWORD = "0000"; 
 
         const SUPABASE_URL = 'https://invtltgtuhhqzaqjkkfj.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_n-VzUf2TqU-UnSJFJPYsYQ_bXN2j9g8';
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: {
-                persistSession: false,
-                autoRefreshToken: false,
-                detectSessionInUrl: false
-            }
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
         });
 
         const CONFIG = {
@@ -306,8 +301,7 @@
 
         function preloadImages() {
             Object.values(IMAGE_URLS).forEach(url => {
-                const img = new Image(); 
-                img.src = url;
+                const img = new Image(); img.src = url;
             });
         }
 
@@ -316,21 +310,14 @@
 
         function detectDevice() {
             const ua = navigator.userAgent.toLowerCase();
-            if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
-                return 'iOS_Apple';
-            } else if (ua.indexOf('android') > -1) {
-                if (ua.indexOf('samsungbrowser') > -1 || ua.indexOf('sm-') > -1) {
-                    return 'Android_Samsung';
-                }
+            if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) return 'iOS_Apple';
+            else if (ua.indexOf('android') > -1) {
+                if (ua.indexOf('samsungbrowser') > -1 || ua.indexOf('sm-') > -1) return 'Android_Samsung';
                 return 'Android_Other';
-            } else {
-                return 'PC_or_Unknown';
-            }
+            } else return 'PC_or_Unknown';
         }
 
-        function updateOsStatusText() {
-            document.getElementById('current-os-span').innerText = userDeviceType;
-        }
+        function updateOsStatusText() { document.getElementById('current-os-span').innerText = userDeviceType; }
 
         window.onload = () => {
             preloadImages(); 
@@ -340,10 +327,7 @@
             presenceChannel = db.channel('online-users');
             presenceChannel.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    await presenceChannel.track({ 
-                        role: 'participant', 
-                        device: userDeviceType 
-                    });
+                    await presenceChannel.track({ role: 'participant', device: userDeviceType });
                 }
             });
         };
@@ -358,24 +342,11 @@
             });
         }
 
-        function setOsButtonActive(btn) {
-            btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600';
-        }
+        function setOsButtonActive(btn) { btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600'; }
 
-        btnOsAuto.addEventListener('click', () => { 
-            resetOsButtons(); setOsButtonActive(btnOsAuto); 
-            userDeviceType = detectDevice(); updateOsStatusText(); 
-        });
-
-        btnOsIos.addEventListener('click', () => { 
-            resetOsButtons(); setOsButtonActive(btnOsIos); 
-            userDeviceType = 'iOS_Apple'; updateOsStatusText(); 
-        });
-
-        btnOsAndroid.addEventListener('click', () => { 
-            resetOsButtons(); setOsButtonActive(btnOsAndroid); 
-            userDeviceType = 'Android_Samsung'; updateOsStatusText(); 
-        });
+        btnOsAuto.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsAuto); userDeviceType = detectDevice(); updateOsStatusText(); });
+        btnOsIos.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsIos); userDeviceType = 'iOS_Apple'; updateOsStatusText(); });
+        btnOsAndroid.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsAndroid); userDeviceType = 'Android_Samsung'; updateOsStatusText(); });
 
         const ICONS = {
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
@@ -461,9 +432,7 @@
                             <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
                             <span class="text-[13px] text-gray-200 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
-                        <svg class="w-3.5 h-3.5 text-gray-400 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+                        <svg class="w-3.5 h-3.5 text-gray-400 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                 `;
             }
@@ -475,7 +444,6 @@
 
         function hideNotification() { notiEl.classList.remove('show'); isNotiVisible = false; }
 
-        // 🌟 비밀번호 모달 제어 로직
         const modal = document.getElementById('modal-password');
         const modalContent = document.getElementById('modal-content');
         const passInput = document.getElementById('input-password');
