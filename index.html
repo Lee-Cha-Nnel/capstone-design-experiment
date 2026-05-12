@@ -75,7 +75,7 @@
         }
         
         .modern-pill-notification.show { 
-            transform: translate(-50%, calc(env(safe-area-inset-top, 44px) + 5px)); 
+            transform: translate(-50%, calc(env(safe-area-inset-top, 44px) + 12px)); 
         }
 
         /* 🤖 안드로이드 스타일 */
@@ -350,7 +350,7 @@
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
             kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`,
             kakaoApp: `<img src="${IMAGE_URLS.kakaoApp}" class="w-full h-full object-cover">`, 
-            kakaoBadge: `<svg class="w-[11px] h-[11px] text-[#371d1e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.1 0 2.525 1.69 4.75 4.19 5.92-.3 1.13-1.12 3.85-1.15 4.02-.03.17.1.18.23.09.1-.06 2.76-1.8 3.92-2.61.88.16 1.82.25 2.81.25 4.97 0 9-3.185 9-7.1S16.97 3 12 3z"/></svg>`
+            kakaoBadge: `<img src="${IMAGE_URLS.kakaoApp}" class="w-full h-full object-cover">`
         };
 
         const TRIAL_SCENARIO = [
@@ -406,7 +406,7 @@
                             <div class="w-full h-full rounded-full ${noti.iconBg} overflow-hidden flex items-center justify-center">
                                 ${currentIconHtml}
                             </div>
-                            <div class="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] bg-[#FEE500] rounded-[6px] flex items-center justify-center shadow-sm">
+                            <div class="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-[5px] overflow-hidden shadow-sm">
                                ${ICONS.kakaoBadge}
                             </div>
                         </div>
