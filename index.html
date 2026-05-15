@@ -75,7 +75,7 @@
         }
         
         .modern-pill-notification.show { 
-            transform: translate(-50%, calc(env(safe-area-inset-top, 44px) + 12px)); 
+            transform: translate(-50%, calc(env(safe-area-inset-top, 44px) + 5px)); 
         }
 
         /* 🤖 안드로이드 스타일 */
@@ -486,8 +486,8 @@
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
             dynamicNotifications = {
-                'Lover': { type: 'Lover', sender: loverName, iconHtml: ICONS.kakaoLover, iconBg: 'bg-white', title: loverName, msg: `오늘 저녁에 뭐해? 끝나고 머할까.` },
-                'Ad': { type: 'Ad', sender: adName, iconHtml: ICONS.kakaoAd, iconBg: 'bg-white', title: adName, msg: `(광고) 오늘은 이모티콘 무료로 받는날!` }
+                'Lover': { type: 'Lover', sender: loverName, iconHtml: ICONS.kakaoLover, iconBg: 'bg-white', title: loverName, msg: `뭐하고 있어? 나 심심해. 놀자` },
+                'Ad': { type: 'Ad', sender: adName, iconHtml: ICONS.kakaoAd, iconBg: 'bg-white', title: adName, msg: `(광고) 화요일은 이모티콘 무료로 받는날!` }
             };
 
             currentTrial = 0; trialData = []; document.getElementById('progress-bar').style.width = '0%';
