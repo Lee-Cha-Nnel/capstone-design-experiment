@@ -294,7 +294,8 @@
         const IMAGE_URLS = {
             adProfile: './ad_profile.jpg',
             loverProfile: './kakaotalk_profile.png',
-            kakaoApp: './kakaotalk_profile.png' 
+            kakaoApp: './kakaotalk_profile.png',
+            kakaoDefaultProfile: './카톡 기본프로필.jpg'
         };
 
         function preloadImages() {
@@ -350,7 +351,8 @@
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
             kakaoLover: `<img src="${IMAGE_URLS.loverProfile}" class="w-full h-full object-cover">`,
             kakaoApp: `<img src="${IMAGE_URLS.kakaoApp}" class="w-full h-full object-cover">`, 
-            kakaoBadge: `<img src="${IMAGE_URLS.kakaoApp}" class="w-full h-full object-cover">`
+            kakaoBadge: `<img src="${IMAGE_URLS.kakaoApp}" class="w-full h-full object-cover">`,
+            kakaoDefaultProfile: `<img src="${IMAGE_URLS.kakaoDefaultProfile}" class="w-full h-full object-cover">`
         };
 
         const TRIAL_SCENARIO = [
@@ -397,6 +399,9 @@
             let currentIconHtml = noti.iconHtml;
             
             if (!isIOS && type === 'Ad') { currentIconHtml = ICONS.kakaoApp; }
+            
+            // 🌟 아이폰(iOS)이면서 관계성(Lover) 알림일 때만 '카톡 기본프로필'로 덮어쓰기!
+            if (isIOS && type === 'Lover') { currentIconHtml = ICONS.kakaoDefaultProfile; }
 
             if (isIOS) {
                 notiEl.className = 'modern-pill-notification anim-ios style-ios';
@@ -486,8 +491,8 @@
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
             dynamicNotifications = {
-                'Lover': { type: 'Lover', sender: loverName, iconHtml: ICONS.kakaoLover, iconBg: 'bg-white', title: loverName, msg: `뭐하고 있어? 나 심심해. 놀자` },
-                'Ad': { type: 'Ad', sender: adName, iconHtml: ICONS.kakaoAd, iconBg: 'bg-white', title: adName, msg: `(광고) 화요일은 이모티콘 무료로 받는날!` }
+                'Lover': { type: 'Lover', sender: loverName, iconHtml: ICONS.kakaoLover, iconBg: 'bg-white', title: loverName, msg: `오늘 저녁에 뭐해? 끝나고 머할까.` },
+                'Ad': { type: 'Ad', sender: adName, iconHtml: ICONS.kakaoAd, iconBg: 'bg-white', title: adName, msg: `(광고) 오늘은 이모티콘 무료로 받는날!` }
             };
 
             currentTrial = 0; trialData = []; document.getElementById('progress-bar').style.width = '0%';
