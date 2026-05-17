@@ -77,7 +77,7 @@
         /* 🌟 수정됨: 전체화면 시 safe-area가 0으로 잡히는 버그 방지 (max 함수 적용) */
         .modern-pill-notification.anim-android.show { 
             /* 안드로이드도 최소 상태바 높이(24px)는 무조건 보장하도록 강제 */
-            transform: translate(-50%, calc(max(env(safe-area-inset-top, 0px), 24px) + 15px)); 
+            transform: translate(-50%, calc(max(env(safe-area-inset-top, 0px), 24px) + 5px)); 
         }
 
         .modern-pill-notification.anim-ios.show { 
