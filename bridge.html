@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>인지 반응 실험 접속 안내</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8f9fa; }
+        .tap-effect:active { transform: scale(0.97); opacity: 0.9; }
+        /* 페이드인 애니메이션 */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-5">
+
+    <div class="bg-white p-8 rounded-[24px] shadow-xl max-w-sm w-full text-center fade-in">
+        
+        <!-- 상단 아이콘 및 헤더 -->
+        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        
+        <h1 class="text-[22px] font-extrabold text-gray-800 mb-2.5">브라우저 접속 안내</h1>
+        
+        <!-- 안내 문구 -->
+        <p class="text-[14px] text-gray-600 mb-6 leading-relaxed">
+            원활한 팝업 알림 작동을 위해 가급적<br>
+            <strong class="text-blue-600">크롬(Chrome)</strong> 또는 <strong class="text-blue-600">사파리(Safari)</strong><br>
+            브라우저 사용을 권장합니다.<br><br>
+            <span class="text-[13px] text-gray-500">
+                (카카오톡, 네이버 앱 등으로 접속하신 경우<br>아래 <b>'링크 복사하기'</b>를 이용해주세요.)
+            </span>
+        </p>
+
+        <!-- 복사될 실제 실험 주소 -->
+        <div class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 mb-6 relative overflow-hidden">
+            <p id="experiment-link" class="text-[11px] text-gray-500 font-mono break-all select-all">
+                https://lee-cha-nnel.github.io/capstone-design-experiment/
+            </p>
+        </div>
+        
+        <!-- 액션 버튼 그룹 -->
+        <div class="space-y-3">
+            <button onclick="location.href='index.html'" class="tap-effect w-full bg-gray-800 text-white font-bold py-4 rounded-xl shadow-md transition-colors text-[16px]">
+                🚀 바로 실험 화면으로 넘어가기
+            </button>
+            
+            <button id="copy-btn" class="tap-effect w-full bg-white text-blue-600 border border-blue-200 font-bold py-4 rounded-xl shadow-sm transition-colors text-[15px]">
+                🔗 실험 링크 복사하기
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // 복사 버튼 로직
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const linkText = document.getElementById('experiment-link').innerText.trim();
+            
+            // 모바일 인앱 브라우저 호환성을 위한 구형 복사 명령어 방식
+            const tempInput = document.createElement('textarea');
+            tempInput.value = linkText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                
+                const btn = document.getElementById('copy-btn');
+                btn.innerHTML = '✅ 복사 완료! <span class="block text-[11px] mt-1 font-normal text-gray-100">크롬이나 사파리를 열고 붙여넣어주세요</span>';
+                btn.classList.remove('bg-white', 'text-blue-600', 'border-blue-200');
+                btn.classList.add('bg-green-600', 'text-white', 'border-green-600', 'shadow-green-600/30');
+                
+            } catch (err) {
+                alert('복사에 실패했습니다. 위 주소를 꾹 눌러서 직접 복사해주세요.');
+            }
+            
+            document.body.removeChild(tempInput);
+        });
+    </script>
+</body>
+</html>
