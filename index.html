@@ -156,25 +156,16 @@
             
             <div class="flex-1 flex flex-col justify-center w-full pt-4 pb-4">
                 <h1 class="text-3xl font-bold mb-3 text-gray-800 mt-4 text-center">실험 검사</h1>
-                <p class="text-gray-500 mb-4 text-center text-[14px] leading-relaxed">
+                <p class="text-gray-500 mb-8 text-center text-[14px] leading-relaxed">
                     화면 중앙에 나타나는 <strong>'수식의 정답'</strong>을 계산하여<br>
                     하단의 4개 버튼 중 알맞은 숫자를 빠르게 누르세요.
                 </p>
 
-                <!-- 테스트용 OS 패널 -->
-                <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 mb-6 shadow-sm">
-                    <label class="block text-[11px] font-bold text-blue-800 mb-2.5 text-center tracking-tight">🛠️ [테스트] 노출할 알림 스타일 강제 선택</label>
-                    <div class="flex gap-2 justify-center">
-                        <button id="btn-os-auto" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600">자동 감지</button>
-                        <button id="btn-os-ios" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm">아이폰</button>
-                        <button id="btn-os-android" class="tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm">안드로이드</button>
-                    </div>
-                    <p class="text-center text-[10px] text-blue-600/70 mt-2.5 font-medium">현재 적용된 상태: <strong id="current-os-span" class="text-blue-800 font-mono"></strong></p>
-                </div>
+                <!-- 🌟 테스트용 패널 완벽히 제거됨 -->
                 
                 <div class="w-full bg-gray-50 p-5 rounded-2xl mb-2 border border-gray-200 shadow-sm">
                     <p class="text-center mb-5">
-                        <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 즉시 파기됩니다.)</span>
+                        <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 연구가 끝나면 즉시 파기됩니다.)</span>
                     </p>
                     
                     <div class="space-y-4">
@@ -211,7 +202,7 @@
             </div>
             
             <h3 class="text-xl font-bold text-gray-900 mb-2">실험 시작 코드</h3>
-            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">모두가 동시에 시작할 수 있도록<br>연구자가 안내한 코드를 입력해주세요.</p>
+            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">비밀번호를 입력해주세요.<br>잠시후 비밀번호를 안내해 줄 것입니다.</p>
             
             <input type="tel" id="input-password" class="custom-input text-center text-3xl font-mono tracking-[0.3em] py-3 mb-2" placeholder="••••" maxlength="4" autocomplete="off" style="-webkit-text-security: disc;">
             
@@ -257,7 +248,7 @@
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
             <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">✓</div>
             <h2 class="text-3xl font-bold mb-3 text-gray-800">실험 종료</h2>
-            <p class="text-gray-500 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
+            <p class="text-gray-500 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.<br>실험내용을 외부에 발설하지 말아주세요!</p>
             
             <div class="w-full space-y-4">
                 <button id="btn-restart" class="tap-effect w-full py-4 bg-white text-gray-800 font-bold rounded-2xl text-lg border border-gray-300 shadow-sm">
@@ -316,12 +307,9 @@
             } else return 'PC_or_Unknown';
         }
 
-        function updateOsStatusText() { document.getElementById('current-os-span').innerText = userDeviceType; }
-
         window.onload = () => {
             preloadImages(); 
             userDeviceType = detectDevice();
-            updateOsStatusText();
 
             presenceChannel = db.channel('online-users');
             presenceChannel.subscribe(async (status) => {
@@ -330,22 +318,6 @@
                 }
             });
         };
-
-        const btnOsAuto = document.getElementById('btn-os-auto');
-        const btnOsIos = document.getElementById('btn-os-ios');
-        const btnOsAndroid = document.getElementById('btn-os-android');
-
-        function resetOsButtons() {
-            [btnOsAuto, btnOsIos, btnOsAndroid].forEach(btn => {
-                btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-white text-gray-500 border border-gray-200 shadow-sm transition-colors hover:bg-gray-50';
-            });
-        }
-
-        function setOsButtonActive(btn) { btn.className = 'tap-effect flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600'; }
-
-        btnOsAuto.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsAuto); userDeviceType = detectDevice(); updateOsStatusText(); });
-        btnOsIos.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsIos); userDeviceType = 'iOS_Apple'; updateOsStatusText(); });
-        btnOsAndroid.addEventListener('click', () => { resetOsButtons(); setOsButtonActive(btnOsAndroid); userDeviceType = 'Android_Samsung'; updateOsStatusText(); });
 
         const ICONS = {
             kakaoAd: `<img src="${IMAGE_URLS.adProfile}" class="w-full h-full object-cover">`,
@@ -432,7 +404,7 @@
                             ${currentIconHtml}
                         </div>
                         <div class="ml-2.5 flex-1 overflow-hidden whitespace-nowrap flex items-center">
-                            <span class="text-[13px] font-bold text-white tracking-tight">${noti.title}</span>
+                            <span class="text-[13px] font-bold text-white tracking-tight truncate max-w-[50%]">${noti.title}</span>
                             <span class="text-[13px] text-gray-200 truncate font-normal tracking-tight ml-1.5">${noti.msg}</span>
                         </div>
                         <svg class="w-3.5 h-3.5 text-gray-400 ml-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
@@ -474,6 +446,11 @@
 
         document.getElementById('btn-modal-confirm').addEventListener('click', () => {
             if(passInput.value === EXPERIMENT_PASSWORD) {
+                // 🌟 추가됨: '시작하기' 버튼을 누르는 순간 강제로 전체화면 씌우기!
+                if (!document.fullscreenElement && document.documentElement.requestFullscreen) { 
+                    document.documentElement.requestFullscreen().catch(err => console.log("전체화면 전환 에러:", err)); 
+                }
+                
                 closeModal(); startActualExperiment(); 
             } else {
                 passError.classList.remove('hidden');
@@ -522,7 +499,8 @@
                 let numMatched = expNum.match(/\d+/);
                 let num = numMatched ? parseInt(numMatched[0], 10) : 1; 
                 let notiType = (num % 2 === 0) ? "Lover" : "Ad"; 
-                setTimeout(() => showSpecificNotification(notiType), 500); 
+                // 🌟 최종 수정: 500ms ➔ 150ms로 알림 등장 속도 단축
+                setTimeout(() => showSpecificNotification(notiType), 150); 
             }
             trialStartTime = performance.now();
         }
