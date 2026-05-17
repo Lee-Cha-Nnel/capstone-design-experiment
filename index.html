@@ -74,14 +74,15 @@
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15); 
         }
         
-        /* 🌟 수정됨: 기존의 통합된 .show 를 지우고, 안드로이드와 아이폰의 Y위치를 완벽하게 분리! */
+        /* 🌟 수정됨: 전체화면 시 safe-area가 0으로 잡히는 버그 방지 (max 함수 적용) */
         .modern-pill-notification.anim-android.show { 
-            transform: translate(-50%, 15px); /* 안드로이드는 펀치홀을 피해 상단에서 15px 고정 여백 */
+            /* 안드로이드도 최소 상태바 높이(24px)는 무조건 보장하도록 강제 */
+            transform: translate(-50%, calc(max(env(safe-area-inset-top, 0px), 24px) + 15px)); 
         }
 
         .modern-pill-notification.anim-ios.show { 
-            /* 아이폰은 다이내믹 아일랜드(safe-area) 여백을 스스로 계산한 뒤, 25px을 더 밑으로 넉넉하게 내림 */
-            transform: translate(-50%, calc(env(safe-area-inset-top, 47px) + 25px)); 
+            /* 아이폰은 다이내믹 아일랜드(safe-area) 최소 47px을 보장하고, 그 밑으로 25px 더 내림 */
+            transform: translate(-50%, calc(max(env(safe-area-inset-top, 0px), 47px) + 25px)); 
         }
 
         /* 🤖 안드로이드 스타일 */
@@ -101,7 +102,6 @@
         .style-ios {
             width: 95%; 
             max-width: 420px;
-            /* 🌟 기존 밝은 흰색에서 살짝 톤 다운된 은은한 쿨그레이로 변경 */
             background-color: rgba(220, 220, 225, 0.85);
             -webkit-backdrop-filter: blur(25px) saturate(200%);
             backdrop-filter: blur(25px) saturate(200%);
@@ -445,13 +445,13 @@
         let expNum = "", loverName = "", adName = "카카오이모티콘", dynamicNotifications = {}; 
         let currentEquation = "", currentCorrectAnswer = 0;
 
-        const screens = { intro: document.getElementById('screen-intro'), fixation: document.getElementById('screen-fixation'), task: document.getElementById('screen-task'), result: document.getElementById('screen-result') };
+        const screens = { intro: document.getElementById('screen-intro'), fixation: document.getElementById('screen-fixation'), task: document.getElementById('screen-task'), result: document.getElementById('screen-result'), 'inapp-block': document.getElementById('screen-inapp-block') };
         const notiEl = document.getElementById('notification');
         const ansBtns = [ document.getElementById('ans-btn-0'), document.getElementById('ans-btn-1'), document.getElementById('ans-btn-2'), document.getElementById('ans-btn-3') ];
 
         function showScreen(screenName) { 
-            Object.values(screens).forEach(s => s.classList.remove('active')); 
-            screens[screenName].classList.add('active'); 
+            Object.values(screens).forEach(s => { if(s) s.classList.remove('active'); }); 
+            if(screens[screenName]) screens[screenName].classList.add('active'); 
         }
 
         function showSpecificNotification(type) {
