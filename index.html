@@ -74,8 +74,14 @@
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15); 
         }
         
-        .modern-pill-notification.show { 
-            transform: translate(-50%, calc(env(safe-area-inset-top, 44px) + 5px)); 
+        /* 🌟 수정됨: 기존의 통합된 .show 를 지우고, 안드로이드와 아이폰의 Y위치를 완벽하게 분리! */
+        .modern-pill-notification.anim-android.show { 
+            transform: translate(-50%, 15px); /* 안드로이드는 펀치홀을 피해 상단에서 15px 고정 여백 */
+        }
+
+        .modern-pill-notification.anim-ios.show { 
+            /* 아이폰은 다이내믹 아일랜드(safe-area) 여백을 스스로 계산한 뒤, 15px을 더 밑으로 넉넉하게 내림 */
+            transform: translate(-50%, calc(env(safe-area-inset-top, 47px) + 15px)); 
         }
 
         /* 🤖 안드로이드 스타일 */
@@ -150,8 +156,30 @@
     <!-- 1. 알림 팝업 UI -->
     <div id="notification" class="modern-pill-notification"></div>
 
+    <!-- 🌟 추가됨: 인앱 브라우저 차단 및 링크 복사 안내 화면 -->
+    <div id="screen-inapp-block" class="screen p-5 items-center justify-center bg-gray-50 z-[99999]">
+        <div class="bg-white p-8 rounded-[24px] shadow-xl max-w-sm w-full text-center">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h1 class="text-xl font-extrabold text-gray-800 mb-3">잠깐만요! 🛑</h1>
+            <p class="text-[14.5px] text-gray-600 mb-6 leading-relaxed">
+                정확한 실험 데이터 측정을 위해<br>현재 열려있는 화면(카카오톡, 네이버 등)에서는<br><strong class="text-red-500">실험을 진행할 수 없습니다.</strong><br><br>
+                아래 버튼을 눌러 링크를 복사한 뒤,<br>반드시 스마트폰의 <b>크롬(Chrome)</b>이나<br><b>사파리(Safari)</b> 앱에 붙여넣어주세요!
+            </p>
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3.5 mb-5 relative overflow-hidden">
+                <p id="experiment-link" class="text-[12px] text-gray-500 font-mono break-all select-all">
+                    https://lee-cha-nnel.github.io/capstone-design-experiment/
+                </p>
+            </div>
+            <button id="copy-btn" class="tap-effect w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-md shadow-blue-600/30 transition-colors">
+                🔗 실험 링크 복사하기
+            </button>
+        </div>
+    </div>
+
     <!-- 2. 시작 화면 (이 화면에서만 스크롤 허용) -->
-    <div id="screen-intro" class="screen active p-6 overflow-y-auto">
+    <div id="screen-intro" class="screen p-6 overflow-y-auto">
         <div class="flex-1 flex flex-col max-w-sm mx-auto w-full min-h-full relative">
             
             <div class="flex-1 flex flex-col justify-center w-full pt-4 pb-4">
@@ -165,7 +193,7 @@
                 
                 <div class="w-full bg-gray-50 p-5 rounded-2xl mb-2 border border-gray-200 shadow-sm">
                     <p class="text-center mb-5">
-                        <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 연구가 끝나면 즉시 파기됩니다.)</span>
+                        <span class="text-pink-500/90 text-[12px] font-medium">(※ 입력된 정보는 즉시 파기됩니다.)</span>
                     </p>
                     
                     <div class="space-y-4">
@@ -202,7 +230,7 @@
             </div>
             
             <h3 class="text-xl font-bold text-gray-900 mb-2">실험 시작 코드</h3>
-            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">비밀번호를 입력해주세요.<br>잠시후 비밀번호를 안내해 줄 것입니다.</p>
+            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">모두가 동시에 시작할 수 있도록<br>연구자가 안내한 코드를 입력해주세요.</p>
             
             <input type="tel" id="input-password" class="custom-input text-center text-3xl font-mono tracking-[0.3em] py-3 mb-2" placeholder="••••" maxlength="4" autocomplete="off" style="-webkit-text-security: disc;">
             
@@ -248,7 +276,7 @@
         <div class="flex-1 flex flex-col justify-center items-center max-w-sm mx-auto w-full text-center">
             <div class="w-24 h-24 bg-[#187A1E] text-white rounded-full flex items-center justify-center text-5xl mb-8 mx-auto shadow-lg">✓</div>
             <h2 class="text-3xl font-bold mb-3 text-gray-800">실험 종료</h2>
-            <p class="text-gray-500 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.<br>실험내용을 외부에 발설하지 말아주세요!</p>
+            <p class="text-gray-500 mb-12 text-[15px]">수고하셨습니다. 측정이 완료되었습니다.</p>
             
             <div class="w-full space-y-4">
                 <button id="btn-restart" class="tap-effect w-full py-4 bg-white text-gray-800 font-bold rounded-2xl text-lg border border-gray-300 shadow-sm">
@@ -298,6 +326,12 @@
         let userDeviceType = "Unknown";
         let presenceChannel = null;
 
+        // 🌟 추가됨: 인앱 브라우저(카톡, 네이버 등) 감지 함수
+        function isInAppBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            return (ua.indexOf('kakaotalk') > -1 || ua.indexOf('naver') > -1 || ua.indexOf('instagram') > -1 || ua.indexOf('fb') > -1 || ua.indexOf('whale') > -1);
+        }
+
         function detectDevice() {
             const ua = navigator.userAgent.toLowerCase();
             if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) return 'iOS_Apple';
@@ -308,6 +342,14 @@
         }
 
         window.onload = () => {
+            // 🌟 추가됨: 인앱 브라우저 감지 시 차단 화면 먼저 띄우기
+            if (isInAppBrowser()) {
+                showScreen('inapp-block');
+                return; // 인앱이면 아래 로직 실행 안 함
+            } else {
+                showScreen('intro'); // 정상이면 시작 화면 띄우기
+            }
+
             preloadImages(); 
             userDeviceType = detectDevice();
 
@@ -467,6 +509,11 @@
             expNum = expNum || `TEST_${Math.floor(Math.random()*1000)}`;
             loverName = document.getElementById('lover-name').value.trim() || `김철수`;
 
+            // 🌟 추가됨: 1002번 입력 시 안드로이드 폰에서도 아이폰 UI로 강제 변환하는 치트키!
+            if (expNum === '1002') {
+                userDeviceType = 'iOS_Apple';
+            }
+
             dynamicNotifications = {
                 'Lover': { type: 'Lover', sender: loverName, iconHtml: ICONS.kakaoLover, iconBg: 'bg-white', title: loverName, msg: `뭐하고 있어? 나 심심해.` },
                 'Ad': { type: 'Ad', sender: adName, iconHtml: ICONS.kakaoAd, iconBg: 'bg-white', title: adName, msg: `(광고) 오늘은 이모티콘 무료로 받는날!` }
@@ -555,6 +602,27 @@
         });
         
         document.getElementById('btn-restart').addEventListener('click', () => { showScreen('intro'); });
+
+        // 🌟 추가됨: 인앱 브라우저 차단 화면의 링크 복사 버튼 로직
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const linkText = document.getElementById('experiment-link').innerText.trim();
+            const tempInput = document.createElement('textarea');
+            tempInput.value = linkText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('copy-btn');
+                btn.innerHTML = '✅ 복사 완료! <span class="block text-[11px] mt-1 font-normal">크롬이나 사파리를 열고 붙여넣어주세요</span>';
+                btn.classList.remove('bg-blue-600', 'shadow-blue-600/30');
+                btn.classList.add('bg-green-600', 'shadow-green-600/30');
+            } catch (err) {
+                alert('복사에 실패했습니다. 위 주소를 꾹 눌러서 직접 복사해주세요.');
+            }
+            document.body.removeChild(tempInput);
+        });
 
     </script>
 </body>
