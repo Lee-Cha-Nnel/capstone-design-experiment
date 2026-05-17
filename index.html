@@ -80,8 +80,8 @@
         }
 
         .modern-pill-notification.anim-ios.show { 
-            /* 아이폰은 다이내믹 아일랜드(safe-area) 여백을 스스로 계산한 뒤, 15px을 더 밑으로 넉넉하게 내림 */
-            transform: translate(-50%, calc(env(safe-area-inset-top, 47px) + 30px)); 
+            /* 아이폰은 다이내믹 아일랜드(safe-area) 여백을 스스로 계산한 뒤, 25px을 더 밑으로 넉넉하게 내림 */
+            transform: translate(-50%, calc(env(safe-area-inset-top, 47px) + 25px)); 
         }
 
         /* 🤖 안드로이드 스타일 */
@@ -237,7 +237,7 @@
             </div>
             
             <h3 class="text-xl font-bold text-gray-900 mb-2">실험 시작 코드</h3>
-            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">모두가 동시에 시작할 수 있도록<br>연구자가 안내한 코드를 입력해주세요.</p>
+            <p class="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">비밀번호를 입력해주세요.<br>잠시후 비밀번호를 안내해 줄 것입니다.</p>
             
             <input type="tel" id="input-password" class="custom-input text-center text-3xl font-mono tracking-[0.3em] py-3 mb-2" placeholder="••••" maxlength="4" autocomplete="off" style="-webkit-text-security: disc;">
             
