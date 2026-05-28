@@ -557,13 +557,13 @@
         });
 
         document.getElementById('btn-modal-confirm').addEventListener('click', () => {
-            if(passInput.value === EXPERIMENT_PASSWORD) {
+            if(passInput.value === EXPERIMENT_PASSWORD) {/*
                 // 🌟 추가됨: '시작하기' 버튼을 누르는 순간 강제로 전체화면 씌우기!
                 if (!document.fullscreenElement && document.documentElement.requestFullscreen) { 
                     document.documentElement.requestFullscreen().catch(err => console.log("전체화면 전환 에러:", err)); 
-                }
+                } */
                 
-                closeModal(); startActualExperiment(); 
+                closeModal(); startActualExperiment();
             } else {
                 passError.classList.remove('hidden');
                 modalContent.classList.add('animate-shake'); 
